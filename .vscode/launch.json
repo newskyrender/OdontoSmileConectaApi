@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Integration.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/src/services/Integration.Api/bin/Debug/net7.0/Integration.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/services/Integration.Api",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7221;http://localhost:5221"
+      }
+    },
+    {
+      "name": "Integration.Gateway.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-gateway",
+      "program": "${workspaceFolder}/src/services/Integration.Gateway.Api/bin/Debug/net7.0/Integration.Gateway.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/services/Integration.Gateway.Api",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7222;http://localhost:5222"
+      }
+    }
+  ]
+}

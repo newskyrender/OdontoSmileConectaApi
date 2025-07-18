@@ -1,0 +1,119 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/services/Integration.Api/Integration.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-gateway",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/services/Integration.Gateway.Api/Integration.Gateway.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-all",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "build",
+        "${workspaceFolder}/Integration.Api.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run-api",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/services/Integration.Api/Integration.Api.csproj"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "csharp",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning)\\s+(\\w+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Now listening on:",
+          "endsPattern": "^.*Application started\\. Press Ctrl\\+C to shut down\\.$"
+        }
+      }
+    },
+    {
+      "label": "run-gateway",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/services/Integration.Gateway.Api/Integration.Gateway.Api.csproj"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "csharp",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning)\\s+(\\w+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Now listening on:",
+          "endsPattern": "^.*Application started\\. Press Ctrl\\+C to shut down\\.$"
+        }
+      }
+    }
+  ]
+}

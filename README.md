@@ -1,4 +1,4 @@
-# pix7-transaction
+# integration-api
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.7comm.com.br/cn-squad/time-cn-squad-investimento/projetos/pix7/pix7-transaction.git
+git remote add origin https://github.com/stramandinoli/integration-api.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.7comm.com.br/cn-squad/time-cn-squad-investimento/projetos/pix7/pix7-transaction/-/settings/integrations)
+- [ ] [Set up project integrations](https://github.com/stramandinoli/integration-api/-/settings/integrations)
 
 ## Collaborate with your team
 

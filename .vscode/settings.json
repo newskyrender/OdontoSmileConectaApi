@@ -1,0 +1,20 @@
+{
+  "dotnet.defaultSolution": "Integration.Api.sln",
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "csharp.semanticHighlighting.enabled": true,
+  "csharp.inlayHints.enableInlayHintsForImplicitObjectCreation": true,
+  "csharp.inlayHints.enableInlayHintsForImplicitVariableTypes": true,
+  "csharp.inlayHints.enableInlayHintsForLambdaParameterTypes": true,
+  "csharp.inlayHints.enableInlayHintsForTypes": true,
+  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true
+}
