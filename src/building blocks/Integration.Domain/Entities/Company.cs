@@ -38,8 +38,6 @@ namespace Integration.Domain.Entities
         public string Contact { get; private set; }
         public bool Active { get; private set; }
 
-        public IEnumerable<BankTransaction> BankTransactions { get; } = new List<BankTransaction>();
-
         public void Activate() => Active = true;
         public void Deactivate() => Active = false;
 
