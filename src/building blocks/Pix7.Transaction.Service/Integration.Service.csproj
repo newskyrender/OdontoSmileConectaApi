@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <NoWarn>$(NoWarn);1591;8603</NoWarn>
   </PropertyGroup>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>    
-    <ProjectReference Include="..\Pix7.Transaction.Domain\Integration.Domain.csproj" />
+    <ProjectReference Include="..\Integration.Domain\Integration.Domain.csproj" />
     <ProjectReference Include="..\Pix7.Transaction.Infrastructure\Integration.Infrastructure.csproj" />    
   </ItemGroup>
 

@@ -36,5 +36,6 @@ COPY --from=publish /app/publish .
 # Set environment variables
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:80
+ENV PORT=80
 
 ENTRYPOINT ["dotnet", "Integration.Api.dll"]

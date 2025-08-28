@@ -97,6 +97,15 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Log de todas as requisições para debug
+            app.Use(async (context, next) =>
+            {
+                var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
+                logger.LogInformation($"Request: {context.Request.Method} {context.Request.Path} from {context.Request.Headers["User-Agent"]}");
+                await next();
+                logger.LogInformation($"Response: {context.Response.StatusCode}");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

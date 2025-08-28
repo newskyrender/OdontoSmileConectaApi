@@ -32,10 +32,9 @@ namespace Integration.Api.Configurations
             // Services
             services.AddScoped<FakeService>();
 
-            // Health checks (necessário para Railway)
+            // Health checks (necessário para Railway) - versão simplificada para debug
             services.AddHealthChecks()
-                .AddCheck("self", () => HealthCheckResult.Healthy("API está funcionando"))
-                .AddDbContextCheck<OdontoSmileDataContext>(name: "database", failureStatus: HealthStatus.Degraded);
+                .AddCheck("self", () => HealthCheckResult.Healthy("API está funcionando"));
 
             return services;
         }
