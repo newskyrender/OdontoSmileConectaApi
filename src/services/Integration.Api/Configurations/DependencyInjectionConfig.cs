@@ -8,7 +8,6 @@ using Integration.Service.AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.RateLimiting;
 using Asp.Versioning;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -19,7 +18,7 @@ namespace Integration.Api.Configurations
         public static IServiceCollection AddDependencyInjection(this IServiceCollection services, IConfiguration configuration)
         {
             // Database Context
-            services.AddDbContext<IntegrationDataContext>(options =>
+            services.AddDbContext<OdontoSmileDataContext>(options =>
             {
                 var connectionString = configuration.GetConnectionString("IntegrationMySql");
                 options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)),
@@ -194,8 +193,8 @@ namespace Integration.Api.Configurations
         public static IServiceCollection AddHealthChecksConfig(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
-                .AddDbContextCheck<IntegrationDataContext>() // Usando o contexto correto Integration
-                .AddCheck("self", () => HealthCheckResult.Healthy()); // Certifique-se de que HealthCheckResult está acessível
+                .AddCheck("self", () => HealthCheckResult.Healthy("API is running"))
+                .AddDbContextCheck<OdontoSmileDataContext>(name: "database", failureStatus: HealthStatus.Degraded);
 
             return services;
         }
@@ -280,6 +279,8 @@ namespace Integration.Api.Configurations
 
         public static IServiceCollection AddRateLimitingConfig(this IServiceCollection services)
         {
+            // Rate limiting não disponível no .NET 6 - comentado para compatibilidade
+            /*
             services.AddRateLimiter(options =>
             {
                 options.AddFixedWindowLimiter("GlobalLimiter", limiterOptions =>
@@ -296,6 +297,7 @@ namespace Integration.Api.Configurations
                     limiterOptions.AutoReplenishment = true;
                 });
             });
+            */
 
             return services;
         }

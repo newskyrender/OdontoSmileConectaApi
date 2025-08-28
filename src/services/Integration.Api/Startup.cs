@@ -97,6 +97,15 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Log de todas as requisições para debug
+            app.Use(async (context, next) =>
+            {
+                var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
+                logger.LogInformation($"Request: {context.Request.Method} {context.Request.Path} from {context.Request.Headers["User-Agent"]}");
+                await next();
+                logger.LogInformation($"Response: {context.Response.StatusCode}");
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -126,8 +135,7 @@ namespace Integration.Api
             // app.UseAuthentication();
             // app.UseAuthorization();
 
-            // Health Checks - comentado temporariamente
-            /*
+            // Health Checks
             app.UseHealthChecks("/health", new HealthCheckOptions
             {
                 ResponseWriter = async (context, report) =>
@@ -148,7 +156,6 @@ namespace Integration.Api
                     await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 }
             });
-            */
 
             app.UseWebApiConfiguration(true);
             app.UseSwaggerConfiguration(env);
