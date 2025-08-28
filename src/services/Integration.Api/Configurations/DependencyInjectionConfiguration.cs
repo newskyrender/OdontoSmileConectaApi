@@ -2,6 +2,8 @@ using Integration.Domain.Repositories;
 using Integration.Infrastructure.Repositories;
 using Integration.Infrastructure.Transactions;
 using Integration.Service.Services;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Integration.Infrastructure.Contexts;
 
 namespace Integration.Api.Configurations
 {
@@ -29,6 +31,11 @@ namespace Integration.Api.Configurations
 
             // Services
             services.AddScoped<FakeService>();
+
+            // Health checks (necessário para Railway)
+            services.AddHealthChecks()
+                .AddCheck("self", () => HealthCheckResult.Healthy("API está funcionando"))
+                .AddDbContextCheck<OdontoSmileDataContext>(name: "database", failureStatus: HealthStatus.Degraded);
 
             return services;
         }
