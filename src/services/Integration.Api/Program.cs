@@ -22,22 +22,22 @@ namespace Integration.Api
             try
             {
                 using var scope = app.Services.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<IntegrationDataContext>();
+                var context = scope.ServiceProvider.GetRequiredService<OdontoSmileDataContext>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-                logger.LogInformation("Verificando migra��es pendentes...");
+                logger.LogInformation("Verificando migrações pendentes...");
 
                 var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
                 if (pendingMigrations.Any())
                 {
-                    logger.LogInformation($"Aplicando {pendingMigrations.Count()} migra��es...");
+                    logger.LogInformation($"Aplicando {pendingMigrations.Count()} migrações...");
                     await context.Database.MigrateAsync();
-                    logger.LogInformation("Migra��es aplicadas com sucesso!");
+                    logger.LogInformation("Migrações aplicadas com sucesso!");
                 }
                 else
                 {
-                    logger.LogInformation("Banco de dados est� atualizado.");
+                    logger.LogInformation("Banco de dados está atualizado.");
                 }
 
                 await SeedInitialDataAsync(context, logger);
@@ -45,17 +45,16 @@ namespace Integration.Api
             catch (Exception ex)
             {
                 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "Erro ao aplicar migra��es do banco de dados");
+                logger.LogError(ex, "Erro ao aplicar migrações do banco de dados");
                 throw;
             }
         }
 
-        // Removido 'async' pois n�o h� await
-        private static Task SeedInitialDataAsync(IntegrationDataContext context, ILogger logger)
+        private static Task SeedInitialDataAsync(OdontoSmileDataContext context, ILogger logger)
         {
             try
             {
-                // Implemente seu seed de dados conforme necess�rio
+                // Implemente seu seed de dados conforme necessário
                 // Exemplo:
                 /*
                 if (!context.Usuarios.Any())

@@ -19,7 +19,7 @@ namespace Integration.Api.Configurations
         public static IServiceCollection AddDependencyInjection(this IServiceCollection services, IConfiguration configuration)
         {
             // Database Context
-            services.AddDbContext<IntegrationDataContext>(options =>
+            services.AddDbContext<OdontoSmileDataContext>(options =>
             {
                 var connectionString = configuration.GetConnectionString("IntegrationMySql");
                 options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)),
