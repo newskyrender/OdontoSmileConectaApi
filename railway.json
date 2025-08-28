@@ -5,6 +5,7 @@
   },
   "deploy": {
     "startCommand": "dotnet Integration.Api.dll",
-    "healthcheckPath": "/health"
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
   }
 }

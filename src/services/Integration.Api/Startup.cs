@@ -126,8 +126,7 @@ namespace Integration.Api
             // app.UseAuthentication();
             // app.UseAuthorization();
 
-            // Health Checks - comentado temporariamente
-            /*
+            // Health Checks
             app.UseHealthChecks("/health", new HealthCheckOptions
             {
                 ResponseWriter = async (context, report) =>
@@ -148,7 +147,6 @@ namespace Integration.Api
                     await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 }
             });
-            */
 
             app.UseWebApiConfiguration(true);
             app.UseSwaggerConfiguration(env);

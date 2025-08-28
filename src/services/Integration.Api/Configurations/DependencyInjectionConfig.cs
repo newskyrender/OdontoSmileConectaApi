@@ -194,8 +194,8 @@ namespace Integration.Api.Configurations
         public static IServiceCollection AddHealthChecksConfig(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
-                .AddDbContextCheck<IntegrationDataContext>() // Usando o contexto correto Integration
-                .AddCheck("self", () => HealthCheckResult.Healthy()); // Certifique-se de que HealthCheckResult está acessível
+                .AddCheck("self", () => HealthCheckResult.Healthy("API is running"))
+                .AddDbContextCheck<OdontoSmileDataContext>(name: "database", failureStatus: HealthStatus.Degraded);
 
             return services;
         }
