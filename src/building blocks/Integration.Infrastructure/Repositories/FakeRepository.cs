@@ -7,7 +7,7 @@ namespace Integration.Infrastructure.Repositories
 {
     public class FakeRepository : GenericRepository<Fake>, IFakeRepository
     {
-        public FakeRepository(IntegrationDataContext context) : base(context)
+        public FakeRepository(OdontoSmileDataContext context) : base(context)
         {
 
         }

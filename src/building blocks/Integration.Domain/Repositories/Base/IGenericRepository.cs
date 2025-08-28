@@ -1,30 +1,23 @@
+using Integration.Domain.Common;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace Integration.Domain.Repositories.Base
 {
-    public interface IGenericRepository<T> where T : class
+    public interface IGenericRepository<T> where T : Entity
     {
-        Task<IEnumerable<T>> GetAllAsync(int? skip = null, int? take = null);
-
-        Task<T> GetByIdAsync(Guid id);
-
-        Task<T> GetByIdAsync(int id);
-
-        Task<T> GetDataAsync(
-            Expression<Func<T, bool>> expression = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null);
-
-        Task<IEnumerable<T>> GetListDataAsync(
-            Expression<Func<T, bool>> expression = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null,
-            int? skip = null, int? take = null);
-
-        Task AddAsync(T entity);
-
-        Task UpdateAsync(T entity, bool modifySingleEntity = false);
-
+        Task<T> GetDataAsync(Expression<Func<T, bool>> expression);
+        Task<IEnumerable<T>> GetListDataAsync();
+        Task<IEnumerable<T>> GetListDataAsync(Expression<Func<T, bool>> expression);
+        Task<T> AddAsync(T entity);
+        Task<T> UpdateAsync(T entity);
         void Delete(T entity);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> expression);
+        Task<int> CountAsync();
+        Task<int> CountAsync(Expression<Func<T, bool>> expression);
+        Task<T> GetByIdAsync(Guid id);
+        Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize);
+        Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>> expression, int pageNumber, int pageSize);
     }
 }
 

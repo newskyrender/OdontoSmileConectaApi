@@ -1,6 +1,7 @@
 {
   "dotnet.defaultSolution": "Integration.Api.sln",
   "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableImportCompletion": true,
   "omnisharp.enableRoslynAnalyzers": true,
   "files.exclude": {
     "**/bin": true,
@@ -15,6 +16,5 @@
   "csharp.inlayHints.enableInlayHintsForImplicitObjectCreation": true,
   "csharp.inlayHints.enableInlayHintsForImplicitVariableTypes": true,
   "csharp.inlayHints.enableInlayHintsForLambdaParameterTypes": true,
-  "csharp.inlayHints.enableInlayHintsForTypes": true,
-  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true
+  "csharp.inlayHints.enableInlayHintsForTypes": true
 }

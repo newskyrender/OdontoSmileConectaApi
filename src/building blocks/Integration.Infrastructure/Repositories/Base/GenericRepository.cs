@@ -1,4 +1,6 @@
+using Integration.Domain.Common;
 using Integration.Domain.Repositories.Base;
+using Integration.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Query;
@@ -6,110 +8,216 @@ using System.Linq.Expressions;
 
 namespace Integration.Infrastructure.Repositories.Base
 {
-    public abstract class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : Entity
     {
-        protected DbSet<T> _dbSet;
-        private DbContext _context;
+        protected readonly OdontoSmileDataContext _context;
+        protected readonly DbSet<T> _dbSet;
 
-        public GenericRepository(DbContext context)
+        public GenericRepository(OdontoSmileDataContext context)
         {
-            _dbSet = context.Set<T>();
             _context = context;
+            _dbSet = context.Set<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(int? skip = null, int? take = null)
+        public virtual async Task<T> GetDataAsync(Expression<Func<T, bool>> expression)
         {
-            if (skip.HasValue & take.HasValue)
+            try
             {
-                return await _dbSet
-                    .AsNoTrackingWithIdentityResolution()
-                    .Skip(take.Value * (skip.Value - 1))
-                    .Take(take.Value)
+                return await _dbSet.AsNoTracking()
+                    .Where(expression)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao buscar dados: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<IEnumerable<T>> GetListDataAsync()
+        {
+            try
+            {
+                return await _dbSet.AsNoTracking()
                     .ToListAsync();
             }
-
-            return await _dbSet
-                .AsNoTrackingWithIdentityResolution()
-                .ToListAsync();
-        }
-
-        public async Task<T> GetByIdAsync(Guid id)
-        {
-            return await _dbSet.FindAsync(id);
-        }
-
-        public async Task<T> GetByIdAsync(int id)
-        {
-            return await _dbSet.FindAsync(id);
-        }
-
-        public async Task<T> GetDataAsync(
-            Expression<Func<T, bool>> expression = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)
-        {
-            var query = _dbSet
-                .AsQueryable()
-                .AsNoTrackingWithIdentityResolution();
-
-            if (expression != null)
-                query = query.Where(expression);
-
-            if (include != null)
-                query = include(query);
-
-            return await query.FirstOrDefaultAsync();
-        }
-
-        public async Task<IEnumerable<T>> GetListDataAsync(
-            Expression<Func<T, bool>> expression = null,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null,
-            int? skip = null, int? take = null)
-        {
-            var query = _dbSet
-                .AsQueryable()
-                .AsNoTrackingWithIdentityResolution();
-
-            if (expression != null)
-                query = query.Where(expression);
-
-            if (include != null)
-                query = include(query);
-
-            if (skip.HasValue && take.HasValue)
+            catch (Exception ex)
             {
-                query = query.Skip(take.Value * (skip.Value - 1));
-                query = query.Take(take.Value);
+                throw new Exception($"Erro ao buscar lista de dados: {ex.Message}", ex);
             }
-
-            return await query.ToListAsync();
         }
 
-        public async Task AddAsync(T entity)
+        public virtual async Task<IEnumerable<T>> GetListDataAsync(Expression<Func<T, bool>> expression)
         {
-            await _dbSet.AddAsync(entity);
-            _context.SaveChanges();
-        }
-
-        public async Task UpdateAsync(T entity, bool modifySingleEntity = false)
-        {
-            if (modifySingleEntity)
+            try
             {
-                EntityEntry entityEntry = _context.Entry<T>(entity);
-                entityEntry.State = EntityState.Modified;
+                return await _dbSet.AsNoTracking()
+                    .Where(expression)
+                    .ToListAsync();
             }
-            else
+            catch (Exception ex)
             {
-                await Task.FromResult(_dbSet.Update(entity));
+                throw new Exception($"Erro ao buscar lista de dados com filtro: {ex.Message}", ex);
             }
-
-            _context.SaveChanges();
         }
 
-        public void Delete(T entity)
+        public virtual async Task<T> AddAsync(T entity)
         {
-            _dbSet.Remove(entity);
+            try
+            {
+                if (entity == null)
+                    throw new ArgumentNullException(nameof(entity));
 
-            _context.SaveChanges();
+                await _dbSet.AddAsync(entity);
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao adicionar entidade: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<T> UpdateAsync(T entity)
+        {
+            try
+            {
+                if (entity == null)
+                    throw new ArgumentNullException(nameof(entity));
+
+                var existingEntity = await _dbSet.FindAsync(entity.Id);
+                if (existingEntity != null)
+                {
+                    _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+                    _context.Entry(existingEntity).State = EntityState.Modified;
+                    return existingEntity;
+                }
+
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao atualizar entidade: {ex.Message}", ex);
+            }
+        }
+
+        public virtual void Delete(T entity)
+        {
+            try
+            {
+                if (entity == null)
+                    throw new ArgumentNullException(nameof(entity));
+
+                if (_context.Entry(entity).State == EntityState.Detached)
+                {
+                    _dbSet.Attach(entity);
+                }
+
+                _dbSet.Remove(entity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao deletar entidade: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> expression)
+        {
+            try
+            {
+                return await _dbSet.AnyAsync(expression);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao verificar existência: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<int> CountAsync()
+        {
+            try
+            {
+                return await _dbSet.CountAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao contar registros: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>> expression)
+        {
+            try
+            {
+                return await _dbSet.CountAsync(expression);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao contar registros com filtro: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<T> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                return await _dbSet.AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao buscar por ID: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            try
+            {
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
+
+                return await _dbSet.AsNoTracking()
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao buscar dados paginados: {ex.Message}", ex);
+            }
+        }
+
+        public virtual async Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>> expression, int pageNumber, int pageSize)
+        {
+            try
+            {
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
+
+                return await _dbSet.AsNoTracking()
+                    .Where(expression)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao buscar dados paginados com filtro: {ex.Message}", ex);
+            }
+        }
+
+        protected virtual IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
+
+        protected virtual IQueryable<T> GetQueryableAsNoTracking()
+        {
+            return _dbSet.AsNoTracking();
+        }
+
+        public void Dispose()
+        {
+            _context?.Dispose();
         }
     }
 

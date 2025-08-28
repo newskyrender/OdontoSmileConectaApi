@@ -16,6 +16,10 @@ namespace Integration.Infrastructure.Mappings
             //Properties
             entity.Property(x => x.Nome).IsRequired().HasMaxLength(255).HasColumnType("VARCHAR");
             entity.Property(x => x.Email).IsRequired().HasMaxLength(1000).HasColumnType("VARCHAR");
+            
+            // Ignorar as propriedades de timestamp por enquanto
+            entity.Ignore(x => x.CreatedAt);
+            entity.Ignore(x => x.UpdatedAt);
 
             //Ignore equivalent NotMapping
             // entity.Ignore(x => x.Notifications); - Temporarily disabled
