@@ -1,42 +1,51 @@
-# Railway-optimized Dockerfile for .NET 6.0 API
+# Multi-stage Dockerfile optimized for Railway
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 
-# Copy project files and restore dependencies
+# Copy all project files for dependency restoration
 COPY ["src/services/Integration.Api/Integration.Api.csproj", "src/services/Integration.Api/"]
-COPY ["src/building blocks/Integration.Service/Integration.Service.csproj", "src/building blocks/Integration.Service/"]  
+COPY ["src/building blocks/Integration.Service/Integration.Service.csproj", "src/building blocks/Integration.Service/"]
 COPY ["src/building blocks/Integration.Infrastructure/Integration.Infrastructure.csproj", "src/building blocks/Integration.Infrastructure/"]
 COPY ["src/building blocks/Integration.Domain/Integration.Domain.csproj", "src/building blocks/Integration.Domain/"]
 
+# Restore dependencies
 RUN dotnet restore "src/services/Integration.Api/Integration.Api.csproj"
 
-# Copy source code and build
+# Copy all source code
 COPY . .
+
+# Build and publish in release mode
 WORKDIR "/src/src/services/Integration.Api"
 RUN dotnet publish "Integration.Api.csproj" -c Release -o /app/publish --no-restore
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
 WORKDIR /app
 
-# Install curl for Railway health checks
+# Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy application
+# Copy published application
 COPY --from=build /app/publish .
 
-# Railway environment configuration
+# Railway-specific environment variables
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://0.0.0.0:$PORT
+ENV ASPNETCORE_HTTP_PORTS=$PORT
 
-# Create health check script
-RUN echo '#!/bin/bash\ncurl -f http://localhost:$PORT/health || exit 1' > /health-check.sh && \
-    chmod +x /health-check.sh
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --gid 1001 appuser
+
+# Change ownership of the app directory
+RUN chown -R appuser:appgroup /app
+USER appuser
 
 # Health check for Railway
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD /health-check.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:$PORT/health || exit 1
 
+# Expose port (Railway will set PORT environment variable)
 EXPOSE $PORT
 
 ENTRYPOINT ["dotnet", "Integration.Api.dll"]

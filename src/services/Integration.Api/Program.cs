@@ -7,15 +7,47 @@ namespace Integration.Api
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Configure Railway-specific settings
+            ConfigureRailwaySettings(builder);
+
+            // Configure services using Startup
+            var startup = new Startup(builder.Configuration);
+            startup.ConfigureServices(builder.Services);
+
+            var app = builder.Build();
+
+            // Configure pipeline using Startup
+            startup.Configure(app, app.Environment);
+
+            // Run migrations in production
+            if (app.Environment.IsProduction())
+            {
+                RunMigrationsAsync(app).GetAwaiter().GetResult();
+            }
+
+            app.Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+        private static void ConfigureRailwaySettings(WebApplicationBuilder builder)
+        {
+            // Railway port configuration
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+            
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.ListenAnyIP(int.Parse(port));
+            });
+
+            // Railway-specific logging
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+            // Add health checks for Railway
+            builder.Services.AddHealthChecks();
+        }
 
         private static async Task RunMigrationsAsync(WebApplication app)
         {
@@ -46,7 +78,11 @@ namespace Integration.Api
             {
                 var logger = app.Services.GetRequiredService<ILogger<Program>>();
                 logger.LogError(ex, "Erro ao aplicar migrações do banco de dados");
-                throw;
+                // Don't throw in production - continue without database
+                if (app.Environment.IsDevelopment())
+                {
+                    throw;
+                }
             }
         }
 
@@ -69,7 +105,7 @@ namespace Integration.Api
             catch (Exception ex)
             {
                 logger.LogError(ex, "Erro ao criar dados iniciais");
-                throw;
+                return Task.CompletedTask; // Don't fail the app for seed issues
             }
         }
     }
