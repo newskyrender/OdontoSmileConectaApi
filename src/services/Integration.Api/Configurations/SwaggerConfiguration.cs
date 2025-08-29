@@ -63,23 +63,55 @@ namespace Integration.Api.Configurations
 
         public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                {
+                    // Configure servers for Railway domain
+                    if (env.IsProduction())
+                    {
+                        swaggerDoc.Servers = new List<OpenApiServer>
+                        {
+                            new OpenApiServer { Url = "https://odontosmileconectaapi-production.up.railway.app", Description = "Production Server" },
+                            new OpenApiServer { Url = "http://odontosmileconectaapi-production.up.railway.app", Description = "Production Server (HTTP)" }
+                        };
+                    }
+                    else
+                    {
+                        swaggerDoc.Servers = new List<OpenApiServer>
+                        {
+                            new OpenApiServer { Url = "https://localhost:7221", Description = "Development Server (HTTPS)" },
+                            new OpenApiServer { Url = "http://localhost:5221", Description = "Development Server (HTTP)" }
+                        };
+                    }
+                });
+            });
 
-            if (env.IsDevelopment())
+            // Configure Swagger UI for both development and production
+            app.UseSwaggerUI(options =>
             {
-                app.UseSwaggerUI(options =>
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Integration API v1");
+                
+                if (env.IsProduction())
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                });
-            }
-            else
-            {
-                app.UseSwaggerUI(options =>
+                    // In production (Railway), make swagger available at root
+                    options.RoutePrefix = "swagger";
+                    options.DocumentTitle = "Integration API - Production";
+                }
+                else
                 {
-                    options.RoutePrefix = string.Empty;
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                });
-            }
+                    // In development, standard swagger route
+                    options.RoutePrefix = "swagger";
+                    options.DocumentTitle = "Integration API - Development";
+                }
+                
+                // Additional configurations for Railway
+                options.DisplayRequestDuration();
+                options.EnableDeepLinking();
+                options.EnableFilter();
+                options.ShowExtensions();
+                options.EnableValidator();
+            });
 
             return app;
         }

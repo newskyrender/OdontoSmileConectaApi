@@ -40,6 +40,12 @@ namespace Integration.Api
                 serverOptions.ListenAnyIP(int.Parse(port));
             });
 
+            // Configure URLs for Railway domain
+            if (builder.Environment.IsProduction())
+            {
+                builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+            }
+
             // Railway-specific logging
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
@@ -47,6 +53,15 @@ namespace Integration.Api
 
             // Add health checks for Railway
             builder.Services.AddHealthChecks();
+            
+            // Configure forwarded headers for Railway proxy
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+                                         Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
         }
 
         private static async Task RunMigrationsAsync(WebApplication app)

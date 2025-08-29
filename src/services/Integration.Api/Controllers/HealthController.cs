@@ -7,6 +7,17 @@ namespace Integration.Api.Controllers
     public class HealthController : ControllerBase
     {
         /// <summary>
+        /// Redireciona para o Swagger quando acessar a raiz da API
+        /// </summary>
+        /// <returns>Redirecionamento para Swagger</returns>
+        [HttpGet("/")]
+        [AllowAnonymous]
+        public IActionResult Root()
+        {
+            return Redirect("/swagger");
+        }
+
+        /// <summary>
         /// Health check endpoint para Railway
         /// </summary>
         /// <returns>Status da API</returns>
@@ -16,13 +27,16 @@ namespace Integration.Api.Controllers
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         public IActionResult Health()
         {
+            var domain = HttpContext.Request.Host.ToString();
             return Ok(new
             {
                 status = "healthy",
                 timestamp = DateTime.UtcNow,
                 version = "1.0.0",
                 environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development",
-                port = Environment.GetEnvironmentVariable("PORT") ?? "80"
+                port = Environment.GetEnvironmentVariable("PORT") ?? "80",
+                domain = domain,
+                swaggerUrl = $"{(HttpContext.Request.IsHttps ? "https" : "http")}://{domain}/swagger"
             });
         }
 
