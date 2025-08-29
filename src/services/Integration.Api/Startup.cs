@@ -39,15 +39,30 @@ namespace Integration.Api
             services.AddSwaggerConfiguration();
             services.AddDependencyInjectionConfiguration();
 
-            // CORS para Railway
+            // CORS para Railway e domínio público
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
                 {
                     builder
-                        .AllowAnyOrigin()
+                        .WithOrigins(
+                            "https://odontosmileconectaapi-production.up.railway.app",
+                            "http://odontosmileconectaapi-production.up.railway.app",
+                            "https://localhost:7221",
+                            "http://localhost:5221"
+                        )
                         .AllowAnyMethod()
-                        .AllowAnyHeader();
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
+                
+                options.AddPolicy("Production", builder =>
+                {
+                    builder
+                        .WithOrigins("https://odontosmileconectaapi-production.up.railway.app")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 });
             });
 
@@ -57,6 +72,9 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Configure forwarded headers for Railway proxy
+            app.UseForwardedHeaders();
+
             // Log de todas as requisições para debug Railway
             app.Use(async (context, next) =>
             {
@@ -72,7 +90,7 @@ namespace Integration.Api
             }
 
             // CORS first
-            app.UseCors("AllowAll");
+            app.UseCors(env.IsProduction() ? "Production" : "AllowAll");
 
             // Health Checks before routing
             app.UseHealthChecks("/health", new HealthCheckOptions
@@ -86,6 +104,7 @@ namespace Integration.Api
                         timestamp = DateTime.UtcNow,
                         environment = env.EnvironmentName,
                         port = Environment.GetEnvironmentVariable("PORT") ?? "8080",
+                        domain = env.IsProduction() ? "odontosmileconectaapi-production.up.railway.app" : "localhost",
                         checks = report.Entries.Select(x => new
                         {
                             name = x.Key,
