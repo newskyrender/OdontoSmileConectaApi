@@ -24,7 +24,7 @@ namespace Integration.Api
             // Configuração do contexto do banco de dados
             AddDataContextConfigurations(services);
 
-            // Controllers com configura��es personalizadas
+            // Controllers com configurações personalizadas
             services.AddControllers(options =>
             {
                 options.SuppressAsyncSuffixInActionNames = false;
@@ -45,18 +45,6 @@ namespace Integration.Api
             services.AddSwaggerConfiguration();
             services.AddDependencyInjectionConfiguration();
 
-            // Configura��es adicionais do novo c�digo - comentadas temporariamente
-            /*
-            services.AddAuthenticationConfig(Configuration);
-            services.AddCorsConfig();
-            services.AddHealthChecksConfig(Configuration);
-            services.AddApiVersioningConfig();
-            services.AddLoggingConfig(Configuration);
-            services.AddCachingConfig(Configuration);
-            services.AddCompressionConfig();
-            services.AddRateLimitingConfig();
-            */
-
             // Apenas CORS para funcionar
             services.AddCors(options =>
             {
@@ -69,7 +57,7 @@ namespace Integration.Api
                 });
             });
 
-            // Configura��es de se��es
+            // Configurações de seções
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
             services.Configure<DatabaseSettings>(Configuration.GetSection("Database"));
             services.Configure<CacheSettings>(Configuration.GetSection("Cache"));
@@ -83,7 +71,7 @@ namespace Integration.Api
                 options.SuppressModelStateInvalidFilter = true;
             });
 
-            // Configura��es de Performance
+            // Configurações de Performance
             services.Configure<IISServerOptions>(options =>
             {
                 options.MaxRequestBodySize = 52428800; // 50MB
@@ -116,24 +104,8 @@ namespace Integration.Api
                 app.UseHsts();
             }
 
-            // Security headers
-            // app.UseSecurityHeaders();
-
-            // HTTPS Redirection
-            // app.UseHttpsRedirection();
-
-            // Response Compression
-            // app.UseResponseCompression();
-
-            // Rate Limiting
-            // app.UseRateLimiter();
-
             // CORS
             app.UseCors("AllowAll");
-
-            // Authentication & Authorization - comentado temporariamente
-            // app.UseAuthentication();
-            // app.UseAuthorization();
 
             // Health Checks
             app.UseHealthChecks("/health", new HealthCheckOptions
@@ -160,17 +132,12 @@ namespace Integration.Api
             app.UseWebApiConfiguration(true);
             app.UseSwaggerConfiguration(env);
 
-            // Controllers
+            // Routing e Controllers
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
-
-            // Fallback para SPA (se necess�rio)
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapFallbackToFile("index.html"); // Corrigido: agora est� no local correto
+                endpoints.MapHealthChecks("/health");
             });
         }
 
@@ -187,7 +154,7 @@ namespace Integration.Api
         }
     }
 
-    // Filtros globais (podem ser movidos para arquivos separados)
+    // Filtros globais
     public class GlobalExceptionFilter : IExceptionFilter
     {
         private readonly ILogger<GlobalExceptionFilter> _logger;
@@ -201,7 +168,7 @@ namespace Integration.Api
         {
             var exception = context.Exception;
 
-            _logger.LogError(exception, "Erro n�o tratado: {Message}", exception.Message);
+            _logger.LogError(exception, "Erro não tratado: {Message}", exception.Message);
 
             var response = new
             {
@@ -234,7 +201,7 @@ namespace Integration.Api
 
                 var response = new
                 {
-                    error = "Dados inv�lidos",
+                    error = "Dados inválidos",
                     message = "Verifique os dados enviados",
                     details = errors
                 };
@@ -247,14 +214,13 @@ namespace Integration.Api
     }
 }
 
-// Extens�o para security headers (pode ser movido para um arquivo separado)
+// Extensão para security headers
 public static class SecurityHeadersExtensions
 {
     public static IApplicationBuilder UseSecurityHeaders(this IApplicationBuilder app)
     {
         return app.Use(async (context, next) =>
         {
-            // Security headers
             context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
             context.Response.Headers.Add("X-Frame-Options", "DENY");
             context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
