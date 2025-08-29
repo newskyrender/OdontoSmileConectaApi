@@ -21,16 +21,11 @@ namespace Integration.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configuração do contexto do banco de dados
-            AddDataContextConfigurations(services);
+            // Configuração do contexto do banco de dados - comentado para debug Railway
+            // AddDataContextConfigurations(services);
 
-            // Controllers com configurações personalizadas
-            services.AddControllers(options =>
-            {
-                options.SuppressAsyncSuffixInActionNames = false;
-                options.Filters.Add<GlobalExceptionFilter>();
-                options.Filters.Add<ValidationFilter>();
-            })
+            // Controllers básicos para Railway
+            services.AddControllers()
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -40,12 +35,11 @@ namespace Integration.Api
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
 
-            services.AddAutoMapperConfiguration();
-            services.AddWebApiConfiguration();
+            // Configurações essenciais para Railway
             services.AddSwaggerConfiguration();
             services.AddDependencyInjectionConfiguration();
 
-            // Apenas CORS para funcionar
+            // CORS para Railway
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
@@ -57,57 +51,30 @@ namespace Integration.Api
                 });
             });
 
-            // Configurações de seções
-            services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
-            services.Configure<DatabaseSettings>(Configuration.GetSection("Database"));
-            services.Configure<CacheSettings>(Configuration.GetSection("Cache"));
-
             // HTTP Client Factory
             services.AddHttpClient();
-
-            // Model State Validation
-            services.Configure<ApiBehaviorOptions>(options =>
-            {
-                options.SuppressModelStateInvalidFilter = true;
-            });
-
-            // Configurações de Performance
-            services.Configure<IISServerOptions>(options =>
-            {
-                options.MaxRequestBodySize = 52428800; // 50MB
-            });
-
-            services.Configure<FormOptions>(options =>
-            {
-                options.MultipartBodyLengthLimit = 52428800; // 50MB
-            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Log de todas as requisições para debug
+            // Log de todas as requisições para debug Railway
             app.Use(async (context, next) =>
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
-                logger.LogInformation($"Request: {context.Request.Method} {context.Request.Path} from {context.Request.Headers["User-Agent"]}");
+                logger.LogInformation($"Railway Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
                 await next();
-                logger.LogInformation($"Response: {context.Response.StatusCode}");
+                logger.LogInformation($"Railway Response: {context.Response.StatusCode}");
             });
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
-            }
 
-            // CORS
+            // CORS first
             app.UseCors("AllowAll");
 
-            // Health Checks
+            // Health Checks before routing
             app.UseHealthChecks("/health", new HealthCheckOptions
             {
                 ResponseWriter = async (context, report) =>
@@ -115,25 +82,25 @@ namespace Integration.Api
                     context.Response.ContentType = "application/json";
                     var response = new
                     {
-                        status = report.Status.ToString(),
+                        status = "Healthy",
+                        timestamp = DateTime.UtcNow,
+                        environment = env.EnvironmentName,
+                        port = Environment.GetEnvironmentVariable("PORT") ?? "8080",
                         checks = report.Entries.Select(x => new
                         {
                             name = x.Key,
-                            status = x.Value.Status.ToString(),
-                            exception = x.Value.Exception?.Message,
-                            duration = x.Value.Duration.ToString()
-                        }),
-                        duration = report.TotalDuration.ToString()
+                            status = x.Value.Status.ToString()
+                        })
                     };
                     await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 }
             });
 
-            app.UseWebApiConfiguration(true);
+            // Simple routing for Railway
+            app.UseRouting();
+            
             app.UseSwaggerConfiguration(env);
 
-            // Routing e Controllers
-            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
