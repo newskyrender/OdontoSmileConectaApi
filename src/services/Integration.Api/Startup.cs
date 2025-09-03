@@ -21,8 +21,8 @@ namespace Integration.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configuração do contexto do banco de dados - comentado para debug Railway
-            // AddDataContextConfigurations(services);
+            // Configuração do contexto do banco de dados
+            AddDataContextConfigurations(services);
 
             // Controllers básicos para Railway
             services.AddControllers()
