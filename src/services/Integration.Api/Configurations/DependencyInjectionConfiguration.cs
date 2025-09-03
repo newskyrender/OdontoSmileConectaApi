@@ -15,6 +15,20 @@ namespace Integration.Api.Configurations
             services.AddHealthChecks()
                 .AddCheck("api", () => HealthCheckResult.Healthy("API está funcionando no Railway"));
 
+            // AutoMapper
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            // UOW - Unit of Work
+            services.AddScoped<IUow, Uow>();
+
+            // Repositories
+            services.AddScoped<IPacienteRepository, PacienteRepository>();
+            services.AddScoped<IFakeRepository, FakeRepository>();
+
+            // Services
+            services.AddScoped<PacienteService>();
+            services.AddScoped<FakeService>();
+
             return services;
         }
     }

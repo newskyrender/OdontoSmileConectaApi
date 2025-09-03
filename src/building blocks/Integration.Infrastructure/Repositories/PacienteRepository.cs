@@ -47,5 +47,21 @@ namespace Integration.Infrastructure.Repositories
             return await _context.Set<Paciente>()
                 .FirstOrDefaultAsync(x => x.NumeroCooperado == numeroCooperado);
         }
+
+        public async Task<IEnumerable<Paciente>> GetByNomeAsync(string nome)
+        {
+            return await _context.Set<Paciente>()
+                .Where(x => x.NomeCompleto.ToLower().Contains(nome.ToLower()))
+                .OrderBy(x => x.NomeCompleto)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Paciente>> GetByCpfOrNomeAsync(string termo)
+        {
+            return await _context.Set<Paciente>()
+                .Where(x => x.Cpf.Contains(termo) || x.NomeCompleto.ToLower().Contains(termo.ToLower()))
+                .OrderBy(x => x.NomeCompleto)
+                .ToListAsync();
+        }
     }
 }

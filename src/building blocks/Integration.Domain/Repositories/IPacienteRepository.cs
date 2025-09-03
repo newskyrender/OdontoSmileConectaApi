@@ -11,5 +11,7 @@ namespace Integration.Domain.Repositories
         Task<IEnumerable<Paciente>> GetPacientesAtivosAsync();
         Task<IEnumerable<Paciente>> GetPacientesPorStatusAsync(StatusPaciente status);
         Task<Paciente> GetByNumeroCooperadoAsync(string numeroCooperado);
+        Task<IEnumerable<Paciente>> GetByNomeAsync(string nome);
+        Task<IEnumerable<Paciente>> GetByCpfOrNomeAsync(string termo);
     }
 }

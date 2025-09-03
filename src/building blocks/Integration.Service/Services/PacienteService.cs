@@ -69,6 +69,28 @@ namespace Integration.Service.Services
             return _mapper.Map<PacienteResponse>(entity);
         }
 
+        public async Task<IEnumerable<ICommandResult>> GetByNome(string nome)
+        {
+            var entities = await _repository.GetByNomeAsync(nome);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhum paciente encontrado com esse nome");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<PacienteResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetByCpfOrNome(string termo)
+        {
+            var entities = await _repository.GetByCpfOrNomeAsync(termo);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhum paciente encontrado com esse termo de busca");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<PacienteResponse>>(entities);
+        }
+
         public async Task<ICommandResult> Handle(PacienteRegisterRequest request)
         {
             // Verificar se CPF já existe
