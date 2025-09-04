@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Integration.Api.Middleware;
 
 namespace Integration.Api
 {
@@ -46,10 +47,14 @@ namespace Integration.Api
                 {
                     builder
                         .WithOrigins(
+                            "https://odontosmileconecta-production.up.railway.app",
+                            "http://odontosmileconecta-production.up.railway.app",
                             "https://odontosmileconectaapi-production.up.railway.app",
                             "http://odontosmileconectaapi-production.up.railway.app",
                             "https://localhost:7221",
-                            "http://localhost:5221"
+                            "http://localhost:5221",
+                            "http://localhost:3000",
+                            "http://localhost:8080"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
@@ -59,7 +64,10 @@ namespace Integration.Api
                 options.AddPolicy("Production", builder =>
                 {
                     builder
-                        .WithOrigins("https://odontosmileconectaapi-production.up.railway.app")
+                        .WithOrigins(
+                            "https://odontosmileconecta-production.up.railway.app",
+                            "http://odontosmileconecta-production.up.railway.app"
+                        )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
@@ -72,6 +80,12 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // CORS first - before anything else
+            app.UseCors(env.IsProduction() ? "Production" : "AllowAll");
+            
+            // Handle OPTIONS preflight requests explicitly
+            app.UseMiddleware<CorsPreflightMiddleware>();
+
             // Configure forwarded headers for Railway proxy
             app.UseForwardedHeaders();
 
@@ -88,9 +102,6 @@ namespace Integration.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            // CORS first
-            app.UseCors(env.IsProduction() ? "Production" : "AllowAll");
 
             // Health Checks before routing
             app.UseHealthChecks("/health", new HealthCheckOptions
