@@ -134,5 +134,49 @@ namespace Integration.Service.Services
 
             return _mapper.Map<SolicitacaoOrcamentoResponse>(entity);
         }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorPaciente(Guid pacienteId)
+        {
+            var entities = await _repository.GetPorPacienteAsync(pacienteId);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhuma solicitação encontrada para este paciente");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorProfissional(Guid profissionalId)
+        {
+            var entities = await _repository.GetPorProfissionalAsync(profissionalId);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhuma solicitação encontrada para este profissional");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorTipoTratamento(TipoTratamento tipoTratamento)
+        {
+            var entities = await _repository.GetPorTipoTratamentoAsync(tipoTratamento);
+
+            if (!entities.Any()) AddNotification("Alert", $"Nenhuma solicitação encontrada para o tratamento {tipoTratamento}");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorPeriodo(DateTime dataInicio, DateTime dataFim)
+        {
+            var entities = await _repository.GetPorPeriodoAsync(dataInicio, dataFim);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhuma solicitação encontrada neste período");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
+        }
     }
 }
