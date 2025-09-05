@@ -131,6 +131,22 @@ namespace Integration.Api.Controllers
         }
 
         /// <summary>
+        /// Retorna profissionais filtrados pelo nome (busca parcial)
+        /// </summary>
+        /// <param name="nome">Nome ou parte do nome do profissional</param>
+        /// <response code="200">Profissionais que foram retornados com sucesso.</response>
+        /// <response code="412">Ocorreu uma falha de pré-condição ou um algum erro interno.</response>
+        [HttpGet("nome/{nome}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(BaseResponse<IEnumerable<ProfissionalResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status412PreconditionFailed)]
+        public async Task<IActionResult> GetByNome([Required] string nome)
+        {
+            var data = await _service.GetByNome(nome);
+            return Ok(data);
+        }
+
+        /// <summary>
         /// Cadastra um novo profissional
         /// </summary>
         /// <param name="request">Dados do profissional para cadastro</param>

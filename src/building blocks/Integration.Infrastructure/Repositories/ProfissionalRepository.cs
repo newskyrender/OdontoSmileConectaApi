@@ -101,5 +101,12 @@ namespace Integration.Infrastructure.Repositories
                 .Include(x => x.Facilidades)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<IEnumerable<Profissional>> GetByNomeAsync(string nome)
+        {
+            return await _context.Set<Profissional>()
+                .Where(x => x.NomeCompleto.Contains(nome))
+                .ToListAsync();
+        }
     }
 }

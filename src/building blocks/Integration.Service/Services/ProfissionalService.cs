@@ -79,6 +79,17 @@ namespace Integration.Service.Services
             return _mapper.Map<List<ProfissionalResponse>>(entities);
         }
 
+        public async Task<IEnumerable<ICommandResult>> GetByNome(string nome)
+        {
+            var entities = await _repository.GetByNomeAsync(nome);
+
+            if (!entities.Any()) AddNotification("Alert", $"Nenhum profissional encontrado com o nome contendo '{nome}'");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<ProfissionalResponse>>(entities);
+        }
+
         public async Task<ICommandResult> Handle(Guid id)
         {
             var entity = await _repository.GetCompletoAsync(id);
