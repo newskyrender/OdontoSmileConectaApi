@@ -151,5 +151,25 @@ namespace Integration.Service.Services
             // Implementar geração de JWT token
             return $"token_for_{usuario.Id}_{DateTime.UtcNow.Ticks}";
         }
+        
+        public async Task<ICommandResult> Handle(AlterarSenhaRequest request)
+        {
+            var entity = await _repository.GetDataAsync(x => x.Id == request.Id);
+
+            if (entity is null) AddNotification("Warning", "Usuário não encontrado");
+
+            if (!VerifyPassword(request.SenhaAtual, entity.SenhaHash))
+                AddNotification("Warning", "Senha atual incorreta");
+
+            if (!IsValid()) return default;
+
+            var senhaHash = HashPassword(request.NovaSenha);
+            entity.AtualizarSenha(senhaHash);
+
+            await _repository.UpdateAsync(entity);
+            await _uow.CommitAsync();
+
+            return _mapper.Map<UsuarioResponse>(entity);
+        }
     }
 }
