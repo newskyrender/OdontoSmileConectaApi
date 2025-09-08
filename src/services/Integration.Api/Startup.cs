@@ -46,19 +46,17 @@ namespace Integration.Api
                 options.AddPolicy("AllowAll", builder =>
                 {
                     builder
-                        .WithOrigins(
-                            "https://odontosmileconecta-production.up.railway.app",
-                            "http://odontosmileconecta-production.up.railway.app",
-                            "https://odontosmileconectaapi-production.up.railway.app",
-                            "http://odontosmileconectaapi-production.up.railway.app",
-                            "https://localhost:7221",
-                            "http://localhost:5221",
-                            "http://localhost:3000",
-                            "http://localhost:8080"
-                        )
+                        .AllowAnyOrigin()  // Permite qualquer origem para desenvolvimento
                         .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowAnyHeader();
+                });
+                
+                options.AddPolicy("Development", builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()  // Para desenvolvimento local
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
                 
                 options.AddPolicy("Production", builder =>
@@ -66,7 +64,9 @@ namespace Integration.Api
                     builder
                         .WithOrigins(
                             "https://odontosmileconecta-production.up.railway.app",
-                            "http://odontosmileconecta-production.up.railway.app"
+                            "http://odontosmileconecta-production.up.railway.app",
+                            "https://odontosmileconectaapi-production.up.railway.app",
+                            "http://odontosmileconectaapi-production.up.railway.app"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
@@ -81,7 +81,14 @@ namespace Integration.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // CORS first - before anything else
-            app.UseCors(env.IsProduction() ? "Production" : "AllowAll");
+            if (env.IsDevelopment())
+            {
+                app.UseCors("Development");
+            }
+            else
+            {
+                app.UseCors("Production");
+            }
             
             // Handle OPTIONS preflight requests explicitly
             app.UseMiddleware<CorsPreflightMiddleware>();
