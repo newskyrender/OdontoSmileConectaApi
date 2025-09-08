@@ -1,0 +1,19 @@
+{
+  "nomeCompleto": "João da Silva",
+  "cpf": "12345678901",
+  "dataNascimento": "1990-01-01T00:00:00.000Z",
+  "estadoCivil": "Solteiro",
+  "sexo": "Masculino",
+  "emailPessoal": "joao.silva@email.com",
+  "celular": "11999999999",
+  "telefoneFixo": "1133333333",
+  "cepResidencial": "01234567",
+  "enderecoResidencial": "Rua das Flores, 123",
+  "bairroResidencial": "Centro",
+  "cidadeResidencial": "São Paulo",
+  "estadoResidencial": "SP",
+  "numeroCooperado": "12345",
+  "planoSaude": "Unimed",
+  "carteirinhaPlano": "123456789",
+  "motivoTratamento": "Limpeza"
+}

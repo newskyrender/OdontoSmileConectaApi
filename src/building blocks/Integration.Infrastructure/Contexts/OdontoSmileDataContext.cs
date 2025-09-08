@@ -48,20 +48,19 @@ namespace Integration.Infrastructure.Contexts
             // Aplicar configurações de mapeamento
             modelBuilder.ApplyConfiguration(new FakeMap());
             modelBuilder.ApplyConfiguration(new UsuarioMap());
+            modelBuilder.ApplyConfiguration(new PacienteMap());
             modelBuilder.ApplyConfiguration(new ProfissionalMap());
             modelBuilder.ApplyConfiguration(new ProfissionalEspecialidadeMap());
             modelBuilder.ApplyConfiguration(new ProfissionalEquipamentoMap());
             modelBuilder.ApplyConfiguration(new ProfissionalFacilidadeMap());
-            // Mappings que ainda precisam ser criados:
-            // modelBuilder.ApplyConfiguration(new PacienteMap());
-            // modelBuilder.ApplyConfiguration(new SolicitacaoOrcamentoMap());
-            // modelBuilder.ApplyConfiguration(new PlanejamentoDigitalMap());
-            // modelBuilder.ApplyConfiguration(new AgendamentoMap());
-            // modelBuilder.ApplyConfiguration(new DocumentoMap());
-            // modelBuilder.ApplyConfiguration(new UserMap());
-            // modelBuilder.ApplyConfiguration(new CompanyMap());
-            // modelBuilder.ApplyConfiguration(new BankMap());
-            // modelBuilder.ApplyConfiguration(new BankAccountMap());
+            modelBuilder.ApplyConfiguration(new SolicitacaoOrcamentoMap());
+            modelBuilder.ApplyConfiguration(new PlanejamentoDigitalMap());
+            modelBuilder.ApplyConfiguration(new AgendamentoMap());
+            modelBuilder.ApplyConfiguration(new DocumentoMap());
+            modelBuilder.ApplyConfiguration(new UserMap());
+            modelBuilder.ApplyConfiguration(new CompanyMap());
+            modelBuilder.ApplyConfiguration(new BankMap());
+            modelBuilder.ApplyConfiguration(new BankAccountMap());
 
             // Configurações globais
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
