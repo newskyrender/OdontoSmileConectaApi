@@ -35,14 +35,15 @@ namespace Integration.Api
             // Railway port configuration
             var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
             
-            builder.WebHost.ConfigureKestrel(serverOptions =>
+            // Só configurar Kestrel para Railway/Produção, não para desenvolvimento local
+            if (builder.Environment.IsProduction() || Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
             {
-                serverOptions.ListenAnyIP(int.Parse(port));
-            });
+                builder.WebHost.ConfigureKestrel(serverOptions =>
+                {
+                    serverOptions.ListenAnyIP(int.Parse(port));
+                });
 
-            // Configure URLs for Railway domain
-            if (builder.Environment.IsProduction())
-            {
+                // Configure URLs for Railway domain
                 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
             }
 

@@ -24,7 +24,7 @@ Write-Host "🔍 Verificando porta 8080..." -ForegroundColor Yellow
 $portCheck = netstat -ano | findstr :8080
 if ($portCheck) {
     Write-Host "⚠️  Porta 8080 está em uso. Tentando liberar..." -ForegroundColor Red
-    $processes = netstat -ano | findstr :8080 | ForEach-Object { ($_ -split '\s+')[-1] } | Sort-Object -Unique
+    $processes = netstat -ano | findstr :8080 | ForEach-Object { ($_ -split "\s+")[-1] } | Sort-Object -Unique
     foreach ($processId in $processes) {
         if ($processId -and $processId -ne "0") {
             try {
