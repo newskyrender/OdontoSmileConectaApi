@@ -19,6 +19,25 @@ namespace Integration.Api.Controllers
         {
             _service = service;
         }
+        
+        private IActionResult ResponseHandler<T>(T data, string errorMessage = "Ocorreu um erro ao processar a solicitação")
+        {
+            if (data == null)
+                return StatusCode(StatusCodes.Status412PreconditionFailed, 
+                    new ResponseError(errorMessage));
+                
+            return Ok(new BaseResponse<T>(data));
+        }
+        
+        private IActionResult ResponseHandler<T>(IEnumerable<ICommandResult> data, string errorMessage = "Ocorreu um erro ao processar a solicitação")
+        {
+            if (data == null)
+                return StatusCode(StatusCodes.Status412PreconditionFailed, 
+                    new ResponseError(errorMessage));
+                    
+            var typedData = data.Cast<T>();
+            return Ok(new BaseResponse<IEnumerable<T>>(typedData));
+        }
 
         /// <summary>
         /// Retorna o profissional filtrado pelo id
@@ -33,7 +52,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetById([Required] Guid id)
         {
             var data = await _service.Handle(id);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível recuperar os dados do profissional");
         }
 
         /// <summary>
@@ -48,7 +68,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var data = await _service.Listar();
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data, 
+                "Não foi possível recuperar a lista de profissionais");
         }
 
         /// <summary>
@@ -63,7 +84,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetAtivos()
         {
             var data = await _service.ListarAtivos();
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data, 
+                "Não foi possível recuperar a lista de profissionais ativos");
         }
 
         /// <summary>
@@ -79,7 +101,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetByStatus([Required] StatusAprovacao status)
         {
             var data = await _service.GetPorStatusAprovacao(status);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data, 
+                $"Não foi possível recuperar a lista de profissionais com status {status}");
         }
 
         /// <summary>
@@ -95,7 +118,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetByEspecialidade([Required] Especialidade especialidade)
         {
             var data = await _service.GetPorEspecialidade(especialidade);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data, 
+                $"Não foi possível recuperar a lista de profissionais com especialidade {especialidade}");
         }
 
         /// <summary>
@@ -111,7 +135,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetByCpf([Required] string cpf)
         {
             var data = await _service.GetByCpf(cpf);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível recuperar o profissional com o CPF informado");
         }
 
         /// <summary>
@@ -127,7 +152,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetByCro([Required] string cro)
         {
             var data = await _service.GetByCro(cro);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível recuperar o profissional com o CRO informado");
         }
 
         /// <summary>
@@ -143,7 +169,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> GetByNome([Required] string nome)
         {
             var data = await _service.GetByNome(nome);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data, 
+                $"Não foi possível recuperar profissionais com o nome contendo '{nome}'");
         }
 
         /// <summary>
@@ -159,7 +186,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> Create([FromBody] ProfissionalRegisterRequest request)
         {
             var data = await _service.Handle(request);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível cadastrar o profissional");
         }
 
         /// <summary>
@@ -175,7 +203,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> Update([FromBody] ProfissionalUpdateRequest request)
         {
             var data = await _service.Handle(request);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível atualizar o profissional");
         }
 
         /// <summary>
@@ -192,7 +221,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> AlterarStatusAprovacao([Required] Guid id, [FromBody] StatusAprovacao status)
         {
             var data = await _service.AlterarStatusAprovacao(id, status);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível alterar o status de aprovação do profissional");
         }
 
         /// <summary>
@@ -208,7 +238,8 @@ namespace Integration.Api.Controllers
         public async Task<IActionResult> Delete([Required] Guid id)
         {
             var data = await _service.Delete(id);
-            return Ok(data);
+            return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
+                "Não foi possível remover o profissional");
         }
     }
 }
