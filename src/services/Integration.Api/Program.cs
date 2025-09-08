@@ -49,7 +49,16 @@ namespace Integration.Api
             // Railway-specific logging
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Logging.SetMinimumLevel(LogLevel.Debug);
+                builder.Logging.AddDebug(); // Adiciona debug provider
+            }
+            else
+            {
+                builder.Logging.SetMinimumLevel(LogLevel.Information);
+            }
 
             // Add health checks for Railway
             builder.Services.AddHealthChecks();

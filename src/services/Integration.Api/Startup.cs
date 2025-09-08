@@ -108,6 +108,23 @@ namespace Integration.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                
+                // Habilita logs detalhados para debug
+                app.Use(async (context, next) =>
+                {
+                    var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
+                    logger.LogDebug($"[DEBUG] Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                    logger.LogDebug($"[DEBUG] Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+                    
+                    await next();
+                    
+                    logger.LogDebug($"[DEBUG] Response: {context.Response.StatusCode}");
+                });
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
 
             // Health Checks before routing
@@ -147,13 +164,22 @@ namespace Integration.Api
 
         private void AddDataContextConfigurations(IServiceCollection services)
         {
+            var enableSqlLogging = Configuration.GetSection("DebugSettings:LogSqlQueries").Get<bool>();
+            
             services.AddDbContext<OdontoSmileDataContext>(opt =>
             {
                 opt.UseMySql(
                     Configuration.GetConnectionString("IntegrationMySql"),
                     new MySqlServerVersion(new Version(8, 0, 36))
                 );
-                opt.EnableSensitiveDataLogging();
+                
+                // Habilita logs detalhados se estiver em desenvolvimento ou se configurado
+                if (enableSqlLogging || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    opt.EnableSensitiveDataLogging();
+                    opt.EnableDetailedErrors();
+                    opt.LogTo(Console.WriteLine, LogLevel.Information);
+                }
             }, ServiceLifetime.Scoped);
         }
     }
