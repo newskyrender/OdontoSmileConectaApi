@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Integration.Api.Middleware;
 
 namespace Integration.Api
 {
@@ -21,8 +22,8 @@ namespace Integration.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configuração do contexto do banco de dados - comentado para debug Railway
-            // AddDataContextConfigurations(services);
+            // Configuração do contexto do banco de dados
+            AddDataContextConfigurations(services);
 
             // Controllers básicos para Railway
             services.AddControllers()
@@ -39,30 +40,33 @@ namespace Integration.Api
             services.AddSwaggerConfiguration();
             services.AddDependencyInjectionConfiguration();
 
-            // CORS para Railway e domínio público
+            // CORS configuração simplificada para Railway
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
+                options.AddDefaultPolicy(builder =>
                 {
                     builder
                         .WithOrigins(
+                            "https://odontosmileconecta-production.up.railway.app",
+                            "http://odontosmileconecta-production.up.railway.app",
                             "https://odontosmileconectaapi-production.up.railway.app",
                             "http://odontosmileconectaapi-production.up.railway.app",
-                            "https://localhost:7221",
-                            "http://localhost:5221"
+                            "http://localhost:3000",
+                            "http://localhost:5173",
+                            "http://localhost:8080"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowCredentials()
+                        .SetPreflightMaxAge(TimeSpan.FromHours(24));
                 });
                 
-                options.AddPolicy("Production", builder =>
+                options.AddPolicy("AllowAll", builder =>
                 {
                     builder
-                        .WithOrigins("https://odontosmileconectaapi-production.up.railway.app")
+                        .AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowAnyHeader();
                 });
             });
 
@@ -72,6 +76,20 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // CORS deve ser aplicado ANTES de qualquer outro middleware
+            // Em produção Railway, usa política mais permissiva temporariamente
+            if (env.IsProduction() && Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
+            {
+                app.UseCors("AllowAll");
+            }
+            else
+            {
+                app.UseCors();
+            }
+            
+            // Handle OPTIONS preflight requests explicitly
+            app.UseMiddleware<CorsPreflightMiddleware>();
+
             // Configure forwarded headers for Railway proxy
             app.UseForwardedHeaders();
 
@@ -79,7 +97,7 @@ namespace Integration.Api
             app.Use(async (context, next) =>
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
-                logger.LogInformation($"Railway Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                logger.LogInformation($"Railway Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress} Origin: {context.Request.Headers.FirstOrDefault(h => h.Key == "Origin").Value}");
                 await next();
                 logger.LogInformation($"Railway Response: {context.Response.StatusCode}");
             });
@@ -87,10 +105,24 @@ namespace Integration.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                
+                // Habilita logs detalhados para debug
+                app.Use(async (context, next) =>
+                {
+                    var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
+                    logger.LogDebug($"[DEBUG] Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                    logger.LogDebug($"[DEBUG] Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
+                    
+                    await next();
+                    
+                    logger.LogDebug($"[DEBUG] Response: {context.Response.StatusCode}");
+                });
             }
-
-            // CORS first
-            app.UseCors(env.IsProduction() ? "Production" : "AllowAll");
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
             // Health Checks before routing
             app.UseHealthChecks("/health", new HealthCheckOptions
@@ -129,13 +161,22 @@ namespace Integration.Api
 
         private void AddDataContextConfigurations(IServiceCollection services)
         {
+            var enableSqlLogging = Configuration.GetSection("DebugSettings:LogSqlQueries").Get<bool>();
+            
             services.AddDbContext<OdontoSmileDataContext>(opt =>
             {
                 opt.UseMySql(
                     Configuration.GetConnectionString("IntegrationMySql"),
                     new MySqlServerVersion(new Version(8, 0, 36))
                 );
-                opt.EnableSensitiveDataLogging();
+                
+                // Habilita logs detalhados se estiver em desenvolvimento ou se configurado
+                if (enableSqlLogging || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    opt.EnableSensitiveDataLogging();
+                    opt.EnableDetailedErrors();
+                    opt.LogTo(Console.WriteLine, LogLevel.Information);
+                }
             }, ServiceLifetime.Scoped);
         }
     }

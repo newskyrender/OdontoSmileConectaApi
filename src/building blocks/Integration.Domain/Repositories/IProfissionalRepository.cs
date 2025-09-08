@@ -14,6 +14,7 @@ namespace Integration.Domain.Repositories
         Task<IEnumerable<Profissional>> GetProfissionaisAtivosAsync();
         Task<IEnumerable<Profissional>> GetPorStatusAprovacaoAsync(StatusAprovacao status);
         Task<IEnumerable<Profissional>> GetPorEspecialidadeAsync(Especialidade especialidade);
+        Task<IEnumerable<Profissional>> GetByNomeAsync(string nome);
         Task<Profissional> GetComEspecialidadesAsync(Guid id);
         Task<Profissional> GetComEquipamentosAsync(Guid id);
         Task<Profissional> GetComFacilidadesAsync(Guid id);

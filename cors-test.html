@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste CORS Railway</title>
+</head>
+<body>
+    <h1>Teste CORS para Railway</h1>
+    <div id="result"></div>
+    <button onclick="testCors()">Testar API</button>
+
+    <script>
+        async function testCors() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testando...';
+            
+            try {
+                console.log('Fazendo requisição para Railway API...');
+                
+                const response = await fetch('https://odontosmileconectaapi-production.up.railway.app/api-integration/paciente', {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'https://odontosmileconecta-production.up.railway.app'
+                    }
+                });
+                
+                console.log('Status da resposta:', response.status);
+                console.log('Headers da resposta:', response.headers);
+                
+                const data = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <h3>Sucesso!</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Headers CORS:</strong></p>
+                    <ul>
+                        <li>Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}</li>
+                        <li>Access-Control-Allow-Credentials: ${response.headers.get('Access-Control-Allow-Credentials')}</li>
+                        <li>Access-Control-Allow-Methods: ${response.headers.get('Access-Control-Allow-Methods')}</li>
+                        <li>Access-Control-Allow-Headers: ${response.headers.get('Access-Control-Allow-Headers')}</li>
+                    </ul>
+                    <p><strong>Dados:</strong></p>
+                    <pre>${data.substring(0, 500)}...</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                resultDiv.innerHTML = `
+                    <h3>Erro!</h3>
+                    <p style="color: red;">${error.message}</p>
+                    <p>Verifique o console do navegador para mais detalhes.</p>
+                `;
+            }
+        }
+
+        // Teste automático de preflight
+        async function testPreflight() {
+            try {
+                const response = await fetch('https://odontosmileconectaapi-production.up.railway.app/api-integration/paciente', {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    headers: {
+                        'Origin': 'https://odontosmileconecta-production.up.railway.app',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                console.log('Preflight Status:', response.status);
+                console.log('Preflight Headers:', response.headers);
+                
+            } catch (error) {
+                console.error('Erro no preflight:', error);
+            }
+        }
+
+        // Executa testes ao carregar a página
+        window.onload = function() {
+            console.log('Página carregada, executando teste preflight...');
+            testPreflight();
+        };
+    </script>
+</body>
+</html>

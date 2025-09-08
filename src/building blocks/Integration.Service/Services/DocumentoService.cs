@@ -49,6 +49,39 @@ namespace Integration.Service.Services
 
             return _mapper.Map<List<DocumentoResponse>>(entities);
         }
+        
+        public async Task<IEnumerable<ICommandResult>> Listar()
+        {
+            var entities = await _repository.GetListDataAsync();
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhum documento encontrado");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<DocumentoResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorTipo(TipoDocumento tipoDocumento)
+        {
+            var entities = await _repository.GetPorTipoAsync(tipoDocumento);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhum documento encontrado");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<DocumentoResponse>>(entities);
+        }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorStatus(StatusDocumento status)
+        {
+            var entities = await _repository.GetPorStatusAsync(status);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhum documento encontrado");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<DocumentoResponse>>(entities);
+        }
 
         public async Task<ICommandResult> Handle(DocumentoUploadRequest request)
         {
