@@ -3,6 +3,7 @@ using System;
 using Integration.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Integration.Infrastructure.Migrations.OdontoSmileData
 {
     [DbContext(typeof(OdontoSmileDataContext))]
-    partial class OdontoSmileDataContextModelSnapshot : ModelSnapshot
+    [Migration("20250908171930_AddTimestampColumnsToPacientes")]
+    partial class AddTimestampColumnsToPacientes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
