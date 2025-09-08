@@ -14,11 +14,8 @@ namespace Integration.Infrastructure.Repositories
 {
     public class SolicitacaoOrcamentoRepository : GenericRepository<SolicitacaoOrcamento>, ISolicitacaoOrcamentoRepository
     {
-        private readonly OdontoSmileDataContext _context;
-
         public SolicitacaoOrcamentoRepository(OdontoSmileDataContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<SolicitacaoOrcamento> GetByNumeroPedidoAsync(string numeroPedido)
@@ -75,6 +72,17 @@ namespace Integration.Infrastructure.Repositories
                 .Include(x => x.Paciente)
                 .Include(x => x.Profissional)
                 .Where(x => x.CreatedAt >= dataInicio && x.CreatedAt <= dataFim)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<SolicitacaoOrcamento>> GetPorNomeOuCpfAsync(string termoBusca)
+        {
+            return await _context.Set<SolicitacaoOrcamento>()
+                .Include(x => x.Paciente)
+                .Include(x => x.Profissional)
+                .Where(x => x.NomeCompleto.Contains(termoBusca) || 
+                           x.Cpf.Contains(termoBusca) ||
+                           (x.Paciente != null && (x.Paciente.NomeCompleto.Contains(termoBusca) || x.Paciente.Cpf.Contains(termoBusca))))
                 .ToListAsync();
         }
 

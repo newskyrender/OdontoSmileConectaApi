@@ -178,5 +178,22 @@ namespace Integration.Service.Services
 
             return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
         }
+
+        public async Task<IEnumerable<ICommandResult>> GetPorNomeOuCpf(string termoBusca)
+        {
+            if (string.IsNullOrWhiteSpace(termoBusca))
+            {
+                AddNotification("Alert", "Termo de busca não pode ser vazio");
+                return default;
+            }
+
+            var entities = await _repository.GetPorNomeOuCpfAsync(termoBusca);
+
+            if (!entities.Any()) AddNotification("Alert", "Nenhuma solicitação encontrada para este nome ou CPF");
+
+            if (!IsValid()) return default;
+
+            return _mapper.Map<List<SolicitacaoOrcamentoResponse>>(entities);
+        }
     }
 }

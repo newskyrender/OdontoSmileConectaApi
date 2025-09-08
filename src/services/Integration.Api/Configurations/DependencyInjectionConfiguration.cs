@@ -31,6 +31,7 @@ namespace Integration.Api.Configurations
             services.AddScoped<IProfissionalEspecialidadeRepository, ProfissionalEspecialidadeRepository>();
             services.AddScoped<IProfissionalEquipamentoRepository, ProfissionalEquipamentoRepository>();
             services.AddScoped<IProfissionalFacilidadeRepository, ProfissionalFacilidadeRepository>();
+            services.AddScoped<ISolicitacaoOrcamentoRepository, SolicitacaoOrcamentoRepository>();
 
             // Services
             services.AddScoped<PacienteService>();
@@ -39,6 +40,7 @@ namespace Integration.Api.Configurations
             services.AddScoped<UsuarioService>();
             services.AddScoped<DocumentoService>();
             services.AddScoped<ProfissionalService>();
+            services.AddScoped<SolicitacaoOrcamentoService>();
 
             return services;
         }

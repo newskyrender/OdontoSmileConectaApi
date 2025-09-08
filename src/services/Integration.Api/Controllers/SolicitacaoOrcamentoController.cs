@@ -196,5 +196,21 @@ namespace Integration.Api.Controllers
             var data = await _service.GetPorPeriodo(dataInicio, dataFim);
             return Ok(data);
         }
+
+        /// <summary>
+        /// Retorna as solicitações por nome do paciente ou CPF
+        /// </summary>
+        /// <param name="termoBusca">Nome do paciente ou CPF para busca</param>
+        /// <response code="200">Solicitações que foram retornadas com sucesso.</response>
+        /// <response code="412">Ocorreu uma falha de pré-condição ou um algum erro interno.</response>
+        [HttpGet("buscar/{termoBusca}")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(BaseResponse<IEnumerable<SolicitacaoOrcamentoResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseError), StatusCodes.Status412PreconditionFailed)]
+        public async Task<IActionResult> GetByNomeOuCpf([Required] string termoBusca)
+        {
+            var data = await _service.GetPorNomeOuCpf(termoBusca);
+            return Ok(data);
+        }
     }
 }

@@ -13,6 +13,7 @@ namespace Integration.Domain.Repositories
         Task<IEnumerable<SolicitacaoOrcamento>> GetPorProfissionalAsync(Guid profissionalId);
         Task<IEnumerable<SolicitacaoOrcamento>> GetPorTipoTratamentoAsync(TipoTratamento tipoTratamento);
         Task<IEnumerable<SolicitacaoOrcamento>> GetPorPeriodoAsync(DateTime dataInicio, DateTime dataFim);
+        Task<IEnumerable<SolicitacaoOrcamento>> GetPorNomeOuCpfAsync(string termoBusca);
         Task<string> GerarProximoNumeroPedidoAsync();
     }
 }
