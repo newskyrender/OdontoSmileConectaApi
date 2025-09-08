@@ -40,37 +40,33 @@ namespace Integration.Api
             services.AddSwaggerConfiguration();
             services.AddDependencyInjectionConfiguration();
 
-            // CORS para Railway e domínio público
+            // CORS configuração simplificada para Railway
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", builder =>
-                {
-                    builder
-                        .AllowAnyOrigin()  // Permite qualquer origem para desenvolvimento
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
-                
-                options.AddPolicy("Development", builder =>
-                {
-                    builder
-                        .AllowAnyOrigin()  // Para desenvolvimento local
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
-                
-                options.AddPolicy("Production", builder =>
+                options.AddDefaultPolicy(builder =>
                 {
                     builder
                         .WithOrigins(
                             "https://odontosmileconecta-production.up.railway.app",
                             "http://odontosmileconecta-production.up.railway.app",
                             "https://odontosmileconectaapi-production.up.railway.app",
-                            "http://odontosmileconectaapi-production.up.railway.app"
+                            "http://odontosmileconectaapi-production.up.railway.app",
+                            "http://localhost:3000",
+                            "http://localhost:5173",
+                            "http://localhost:8080"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowCredentials()
+                        .SetPreflightMaxAge(TimeSpan.FromHours(24));
+                });
+                
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
             });
 
@@ -80,14 +76,15 @@ namespace Integration.Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // CORS first - before anything else
-            if (env.IsDevelopment())
+            // CORS deve ser aplicado ANTES de qualquer outro middleware
+            // Em produção Railway, usa política mais permissiva temporariamente
+            if (env.IsProduction() && Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
             {
-                app.UseCors("Development");
+                app.UseCors("AllowAll");
             }
             else
             {
-                app.UseCors("Production");
+                app.UseCors();
             }
             
             // Handle OPTIONS preflight requests explicitly
@@ -100,7 +97,7 @@ namespace Integration.Api
             app.Use(async (context, next) =>
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
-                logger.LogInformation($"Railway Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress}");
+                logger.LogInformation($"Railway Request: {context.Request.Method} {context.Request.Path} from {context.Connection.RemoteIpAddress} Origin: {context.Request.Headers.FirstOrDefault(h => h.Key == "Origin").Value}");
                 await next();
                 logger.LogInformation($"Railway Response: {context.Response.StatusCode}");
             });

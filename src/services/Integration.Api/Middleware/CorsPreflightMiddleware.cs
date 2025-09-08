@@ -17,58 +17,51 @@ namespace Integration.Api.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Log da requisição para debug
+            _logger.LogInformation("CORS Request: {Method} {Path} from Origin: {Origin}", 
+                context.Request.Method, 
+                context.Request.Path,
+                context.Request.Headers.TryGetValue("Origin", out StringValues origin) ? origin.ToString() : "none");
+
+            // Sempre adiciona headers CORS básicos
+            var requestOrigin = context.Request.Headers.TryGetValue("Origin", out StringValues originHeader) 
+                ? originHeader.ToString() 
+                : "*";
+
+            // Lista de origens permitidas
+            string[] allowedOrigins = {
+                "https://odontosmileconecta-production.up.railway.app",
+                "http://odontosmileconecta-production.up.railway.app",
+                "https://odontosmileconectaapi-production.up.railway.app",
+                "http://odontosmileconectaapi-production.up.railway.app",
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:8080"
+            };
+
+            // Em desenvolvimento ou se a origem está na lista permitida
+            bool isAllowedOrigin = _env.IsDevelopment() || allowedOrigins.Contains(requestOrigin);
+            
+            if (isAllowedOrigin || requestOrigin == "*")
+            {
+                context.Response.Headers.Append("Access-Control-Allow-Origin", 
+                    _env.IsDevelopment() ? "*" : requestOrigin);
+                context.Response.Headers.Append("Access-Control-Allow-Headers", 
+                    "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Api-Key");
+                context.Response.Headers.Append("Access-Control-Allow-Methods", 
+                    "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD");
+                context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+                context.Response.Headers.Append("Access-Control-Max-Age", "86400");
+            }
+
             // Tratamento especial para requisições OPTIONS (preflight CORS)
             if (context.Request.Method == "OPTIONS")
             {
-                _logger.LogInformation("Handling OPTIONS preflight request from: {Origin}", 
-                    context.Request.Headers.TryGetValue("Origin", out StringValues origin) ? origin.ToString() : "unknown");
-
-                // Em desenvolvimento, permite qualquer origem
-                if (_env.IsDevelopment())
-                {
-                    context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
-                    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
-                    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD");
-                }
-                else
-                {
-                    // Em produção, usa origins específicos
-                    string allowedOrigins = "https://odontosmileconecta-production.up.railway.app";
-                    
-                    context.Response.Headers.Append("Access-Control-Allow-Origin", 
-                        context.Request.Headers.TryGetValue("Origin", out StringValues requestOrigin) 
-                            ? requestOrigin.ToString() 
-                            : allowedOrigins);
-                    context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin");
-                    context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD");
-                    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-                }
+                _logger.LogInformation("Handling OPTIONS preflight request");
                 
-                context.Response.Headers.Append("Access-Control-Max-Age", "86400"); // 24 horas
-
-                // Responde 200 OK para requisições preflight
                 context.Response.StatusCode = 200;
                 await context.Response.WriteAsync("");
                 return;
-            }
-
-            // Adiciona headers CORS para requisições normais também
-            if (_env.IsDevelopment())
-            {
-                context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
-            }
-            else if (context.Request.Headers.TryGetValue("Origin", out StringValues requestOrigin))
-            {
-                string[] allowedOrigins = {
-                    "https://odontosmileconecta-production.up.railway.app",
-                    "http://odontosmileconecta-production.up.railway.app"
-                };
-                
-                if (allowedOrigins.Contains(requestOrigin.ToString()))
-                {
-                    context.Response.Headers.Append("Access-Control-Allow-Origin", requestOrigin.ToString());
-                    context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-                }
             }
 
             // Continua o pipeline para outras requisições
