@@ -48,19 +48,20 @@ namespace Integration.Infrastructure.Contexts
             // Aplicar configurações de mapeamento
             modelBuilder.ApplyConfiguration(new FakeMap());
             modelBuilder.ApplyConfiguration(new UsuarioMap());
-            modelBuilder.ApplyConfiguration(new PacienteMap());
             modelBuilder.ApplyConfiguration(new ProfissionalMap());
-            modelBuilder.ApplyConfiguration(new SolicitacaoOrcamentoMap());
-            modelBuilder.ApplyConfiguration(new PlanejamentoDigitalMap());
-            modelBuilder.ApplyConfiguration(new AgendamentoMap());
-            modelBuilder.ApplyConfiguration(new DocumentoMap());
             modelBuilder.ApplyConfiguration(new ProfissionalEspecialidadeMap());
             modelBuilder.ApplyConfiguration(new ProfissionalEquipamentoMap());
             modelBuilder.ApplyConfiguration(new ProfissionalFacilidadeMap());
-            modelBuilder.ApplyConfiguration(new UserMap());
-            modelBuilder.ApplyConfiguration(new CompanyMap());
-            modelBuilder.ApplyConfiguration(new BankMap());
-            modelBuilder.ApplyConfiguration(new BankAccountMap());
+            // Mappings que ainda precisam ser criados:
+            // modelBuilder.ApplyConfiguration(new PacienteMap());
+            // modelBuilder.ApplyConfiguration(new SolicitacaoOrcamentoMap());
+            // modelBuilder.ApplyConfiguration(new PlanejamentoDigitalMap());
+            // modelBuilder.ApplyConfiguration(new AgendamentoMap());
+            // modelBuilder.ApplyConfiguration(new DocumentoMap());
+            // modelBuilder.ApplyConfiguration(new UserMap());
+            // modelBuilder.ApplyConfiguration(new CompanyMap());
+            // modelBuilder.ApplyConfiguration(new BankMap());
+            // modelBuilder.ApplyConfiguration(new BankAccountMap());
 
             // Configurações globais
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -112,34 +113,10 @@ namespace Integration.Infrastructure.Contexts
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Atualizar timestamps automaticamente (apenas se as propriedades existirem no modelo)
-            var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is Entity && (e.State == EntityState.Added || e.State == EntityState.Modified));
-
-            foreach (var entry in entries)
-            {
-                try
-                {
-                    if (entry.State == EntityState.Added)
-                    {
-                        // Verificar se a propriedade CreatedAt existe no modelo
-                        var createdAtProperty = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "CreatedAt");
-                        if (createdAtProperty != null)
-                            createdAtProperty.CurrentValue = DateTime.UtcNow;
-                    }
-
-                    // Verificar se a propriedade UpdatedAt existe no modelo
-                    var updatedAtProperty = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "UpdatedAt");
-                    if (updatedAtProperty != null)
-                        updatedAtProperty.CurrentValue = DateTime.UtcNow;
-                }
-                catch (Exception)
-                {
-                    // Ignorar erros de propriedades não encontradas
-                    continue;
-                }
-            }
-
+            // As colunas created_at e updated_at são gerenciadas pelo banco de dados
+            // com DEFAULT CURRENT_TIMESTAMP e ON UPDATE CURRENT_TIMESTAMP
+            // Não precisamos definir os valores manualmente
+            
             return await base.SaveChangesAsync(cancellationToken);
         }
     }

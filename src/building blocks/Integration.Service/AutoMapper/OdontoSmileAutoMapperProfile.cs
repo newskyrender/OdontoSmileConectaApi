@@ -70,10 +70,10 @@ namespace Integration.Service.AutoMapper
             CreateMap<string, StatusAprovacao>().ConvertUsing(src => Enum.Parse<StatusAprovacao>(src, true));
 
             CreateMap<TempoExperiencia, string>().ConvertUsing(src => src.ToString().ToLower());
-            CreateMap<string, TempoExperiencia>().ConvertUsing(src => Enum.Parse<TempoExperiencia>(src, true));
+            CreateMap<string, TempoExperiencia>().ConvertUsing(src => ConvertToTempoExperiencia(src));
 
             CreateMap<NumeroCadeiras, string>().ConvertUsing(src => src.ToString().ToLower());
-            CreateMap<string, NumeroCadeiras>().ConvertUsing(src => Enum.Parse<NumeroCadeiras>(src, true));
+            CreateMap<string, NumeroCadeiras>().ConvertUsing(src => ConvertToNumeroCadeiras(src));
 
             CreateMap<TipoConta, string>().ConvertUsing(src => src.ToString().ToLower());
             CreateMap<string, TipoConta>().ConvertUsing(src => Enum.Parse<TipoConta>(src, true));
@@ -142,10 +142,73 @@ namespace Integration.Service.AutoMapper
 
             // Mapeamentos específicos para TempoConsulta enum
             CreateMap<TempoConsulta?, string>().ConvertUsing(src =>
-                src != null ? src.ToString().Replace("Minutos", "_min").ToLower() : "");
+                src != null ? ConvertTempoConsultaToString(src.Value) : "");
             CreateMap<string, TempoConsulta?>().ConvertUsing(src =>
-                string.IsNullOrEmpty(src) ? (TempoConsulta?)null :
-                Enum.Parse<TempoConsulta>(src.Replace("_min", "Minutos"), true));
+                string.IsNullOrEmpty(src) ? (TempoConsulta?)null : ConvertToTempoConsulta(src));
+        }
+
+        private static TempoExperiencia ConvertToTempoExperiencia(string src)
+        {
+            if (string.IsNullOrEmpty(src))
+                return TempoExperiencia.Menos1Ano;
+
+            var normalized = src.ToLower().Trim();
+            return normalized switch
+            {
+                "menos 1 ano" or "menos1ano" or "menos de 1 ano" => TempoExperiencia.Menos1Ano,
+                "1-5 anos" or "entre1e5anos" or "entre 1 e 5 anos" => TempoExperiencia.Entre1e5Anos,
+                "6-10 anos" or "entre6e10anos" or "entre 6 e 10 anos" => TempoExperiencia.Entre6e10Anos,
+                "11-20 anos" or "entre11e20anos" or "entre 11 e 20 anos" => TempoExperiencia.Entre11e20Anos,
+                "mais de 20 anos" or "mais20anos" or "20+ anos" => TempoExperiencia.Mais20Anos,
+                _ => Enum.TryParse<TempoExperiencia>(src, true, out var result) ? result : TempoExperiencia.Menos1Ano
+            };
+        }
+
+        private static NumeroCadeiras ConvertToNumeroCadeiras(string src)
+        {
+            if (string.IsNullOrEmpty(src))
+                return NumeroCadeiras.UmaCadeira;
+
+            var normalized = src.ToLower().Trim();
+            return normalized switch
+            {
+                "1 cadeira" or "uma cadeira" or "umacadeira" => NumeroCadeiras.UmaCadeira,
+                "2 cadeiras" or "duas cadeiras" or "duascadeiras" => NumeroCadeiras.DuasCadeiras,
+                "3 cadeiras" or "três cadeiras" or "trescadeiras" => NumeroCadeiras.TresCadeiras,
+                "4 cadeiras" or "quatro cadeiras" or "quatrocadeiras" => NumeroCadeiras.QuatroCadeiras,
+                "5+ cadeiras" or "cinco ou mais" or "cincooumaiscadeiras" => NumeroCadeiras.CincoOuMaisCadeiras,
+                _ => Enum.TryParse<NumeroCadeiras>(src, true, out var result) ? result : NumeroCadeiras.UmaCadeira
+            };
+        }
+
+        private static string ConvertTempoConsultaToString(TempoConsulta tempo)
+        {
+            return tempo switch
+            {
+                TempoConsulta.TrintaMinutos => "30 minutos",
+                TempoConsulta.QuarentaCincoMinutos => "45 minutos",
+                TempoConsulta.SessentaMinutos => "60 minutos",
+                TempoConsulta.NoventaMinutos => "90 minutos",
+                TempoConsulta.CentoVinteMinutos => "120 minutos",
+                _ => tempo.ToString().ToLower()
+            };
+        }
+
+        private static TempoConsulta ConvertToTempoConsulta(string src)
+        {
+            if (string.IsNullOrEmpty(src))
+                return TempoConsulta.TrintaMinutos;
+
+            var normalized = src.ToLower().Trim();
+            return normalized switch
+            {
+                "30 minutos" or "trinta minutos" or "trintaminutos" => TempoConsulta.TrintaMinutos,
+                "45 minutos" or "quarenta e cinco minutos" or "quarentacinco" => TempoConsulta.QuarentaCincoMinutos,
+                "60 minutos" or "sessenta minutos" or "sessentaminutos" or "1 hora" => TempoConsulta.SessentaMinutos,
+                "90 minutos" or "noventa minutos" or "noventaminutos" or "1h30" => TempoConsulta.NoventaMinutos,
+                "120 minutos" or "cento e vinte minutos" or "2 horas" => TempoConsulta.CentoVinteMinutos,
+                _ => Enum.TryParse<TempoConsulta>(src, true, out var result) ? result : TempoConsulta.TrintaMinutos
+            };
         }
     }
 }

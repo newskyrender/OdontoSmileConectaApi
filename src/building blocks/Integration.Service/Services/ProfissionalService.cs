@@ -193,6 +193,230 @@ namespace Integration.Service.Services
             return _mapper.Map<ProfissionalResponse>(entity);
         }
 
+        public async Task<ICommandResult> HandleDto(ProfissionalRegisterRequestDto requestDto)
+        {
+            // Converter DTO para Request interno
+            var request = ConvertDtoToRequest(requestDto);
+            
+            // Usar o método Handle existente
+            return await Handle(request);
+        }
+
+        private ProfissionalRegisterRequest ConvertDtoToRequest(ProfissionalRegisterRequestDto dto)
+        {
+            var request = new ProfissionalRegisterRequest
+            {
+                // Dados Pessoais
+                NomeCompleto = dto.NomeCompleto,
+                Cpf = dto.Cpf,
+                DataNascimento = dto.DataNascimento,
+                Sexo = ConvertStringToSexo(dto.Sexo),
+                EmailProfissional = dto.EmailProfissional,
+                Celular = dto.Celular,
+                TelefoneAdicional = dto.TelefoneAdicional,
+
+                // Dados Profissionais
+                Cro = dto.Cro,
+                DataFormatura = dto.DataFormatura,
+                UniversidadeFormacao = dto.UniversidadeFormacao,
+                TempoExperiencia = ConvertStringToTempoExperiencia(dto.TempoExperiencia),
+                OutrasEspecialidades = dto.OutrasEspecialidades,
+                Especialidades = ConvertStringListToEspecialidades(dto.Especialidades),
+
+                // Dados do Consultório
+                NomeConsultorio = dto.NomeConsultorio,
+                Cnpj = dto.Cnpj,
+                TelefoneConsultorio = dto.TelefoneConsultorio,
+                CepConsultorio = dto.Cep,
+                EnderecoConsultorio = dto.EnderecoCompleto,
+                BairroConsultorio = dto.Bairro,
+                CidadeConsultorio = dto.Cidade,
+                EstadoConsultorio = dto.Estado,
+                NumeroCadeiras = ConvertStringToNumeroCadeiras(dto.NumeroCadeiras),
+                OutrosEquipamentos = dto.OutrosEquipamentos,
+                ObservacoesConsultorio = dto.ObservacoesConsultorio,
+                Equipamentos = ConvertStringListToEquipamentos(dto.Equipamentos),
+                Facilidades = ConvertStringListToFacilidades(dto.Facilidades),
+
+                // Horários
+                SegundaSextaInicio = ParseTimeSpan(dto.HorarioFuncionamento?.SegundaSexta?.Inicio),
+                SegundaSextaFim = ParseTimeSpan(dto.HorarioFuncionamento?.SegundaSexta?.Fim),
+                SabadoInicio = ParseTimeSpan(dto.HorarioFuncionamento?.Sabado?.Inicio),
+                SabadoFim = ParseTimeSpan(dto.HorarioFuncionamento?.Sabado?.Fim),
+                DomingoInicio = ParseTimeSpan(dto.HorarioFuncionamento?.Domingo?.Inicio),
+                DomingoFim = ParseTimeSpan(dto.HorarioFuncionamento?.Domingo?.Fim),
+                TempoMedioConsulta = ConvertStringToTempoConsulta(dto.TempoMedioConsulta),
+
+                // Dados Bancários
+                Banco = dto.DadosBancarios?.Banco,
+                TipoConta = ConvertStringToTipoConta(dto.DadosBancarios?.TipoConta),
+                Agencia = dto.DadosBancarios?.Agencia,
+                Conta = dto.DadosBancarios?.Conta,
+                NomeTitular = dto.DadosBancarios?.NomeTitular,
+                CpfTitular = dto.DadosBancarios?.CpfTitular,
+
+                // Termos
+                TermosUso = dto.TermosAceitos?.TermosUso ?? false,
+                CodigoEtica = dto.TermosAceitos?.CodigoEtica ?? false,
+                Responsabilidade = dto.TermosAceitos?.Responsabilidade ?? false,
+                DadosPessoais = dto.TermosAceitos?.DadosPessoais ?? false,
+                Marketing = dto.TermosAceitos?.Marketing ?? false
+            };
+
+            return request;
+        }
+
+        private Sexo ConvertStringToSexo(string sexo)
+        {
+            return sexo?.ToLower() switch
+            {
+                "masculino" or "m" => Sexo.Masculino,
+                "feminino" or "f" => Sexo.Feminino,
+                "outro" => Sexo.Outro,
+                _ => Sexo.NaoInformar
+            };
+        }
+
+        private TempoExperiencia ConvertStringToTempoExperiencia(string tempo)
+        {
+            return tempo?.ToLower()?.Trim() switch
+            {
+                "menos 1 ano" or "menos de 1 ano" => TempoExperiencia.Menos1Ano,
+                "1-5 anos" or "entre 1 e 5 anos" => TempoExperiencia.Entre1e5Anos,
+                "6-10 anos" or "entre 6 e 10 anos" => TempoExperiencia.Entre6e10Anos,
+                "11-20 anos" or "entre 11 e 20 anos" => TempoExperiencia.Entre11e20Anos,
+                "mais de 20 anos" or "20+ anos" => TempoExperiencia.Mais20Anos,
+                _ => TempoExperiencia.Menos1Ano
+            };
+        }
+
+        private NumeroCadeiras ConvertStringToNumeroCadeiras(string numero)
+        {
+            return numero?.ToLower()?.Trim() switch
+            {
+                "1 cadeira" or "uma cadeira" => NumeroCadeiras.UmaCadeira,
+                "2 cadeiras" or "duas cadeiras" => NumeroCadeiras.DuasCadeiras,
+                "3 cadeiras" or "três cadeiras" => NumeroCadeiras.TresCadeiras,
+                "4 cadeiras" or "quatro cadeiras" => NumeroCadeiras.QuatroCadeiras,
+                "5+ cadeiras" or "cinco ou mais" => NumeroCadeiras.CincoOuMaisCadeiras,
+                _ => NumeroCadeiras.UmaCadeira
+            };
+        }
+
+        private TempoConsulta? ConvertStringToTempoConsulta(string tempo)
+        {
+            if (string.IsNullOrEmpty(tempo)) return null;
+            
+            return tempo.ToLower().Trim() switch
+            {
+                "30 minutos" or "trinta minutos" => TempoConsulta.TrintaMinutos,
+                "45 minutos" or "quarenta e cinco minutos" => TempoConsulta.QuarentaCincoMinutos,
+                "60 minutos" or "sessenta minutos" or "1 hora" => TempoConsulta.SessentaMinutos,
+                "90 minutos" or "noventa minutos" or "1h30" => TempoConsulta.NoventaMinutos,
+                "120 minutos" or "cento e vinte minutos" or "2 horas" => TempoConsulta.CentoVinteMinutos,
+                _ => TempoConsulta.TrintaMinutos
+            };
+        }
+
+        private TipoConta? ConvertStringToTipoConta(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo)) return null;
+            
+            return tipo.ToLower().Trim() switch
+            {
+                "conta corrente" or "contacorrente" => TipoConta.ContaCorrente,
+                "conta poupança" or "conta poupanca" or "poupança" => TipoConta.ContaPoupanca,
+                _ => TipoConta.ContaCorrente
+            };
+        }
+
+        private List<Especialidade> ConvertStringListToEspecialidades(List<string> especialidades)
+        {
+            if (especialidades == null) return new List<Especialidade>();
+            
+            var result = new List<Especialidade>();
+            foreach (var esp in especialidades)
+            {
+                var especialidade = esp.ToLower().Trim() switch
+                {
+                    "ortodontia" => Especialidade.Ortodontia,
+                    "implantodontia" => Especialidade.Implantodontia,
+                    "endodontia" => Especialidade.Endodontia,
+                    "prótese" or "protese" => Especialidade.Protese,
+                    "periodontia" => Especialidade.Periodontia,
+                    "cirurgia oral" => Especialidade.CirurgiaOral,
+                    "dentística" or "dentistica" => Especialidade.Dentistica,
+                    "clínica geral" or "clinica geral" => Especialidade.ClinicaGeral,
+                    _ => (Especialidade?)null
+                };
+                
+                if (especialidade.HasValue)
+                    result.Add(especialidade.Value);
+            }
+            
+            return result;
+        }
+
+        private List<Equipamento> ConvertStringListToEquipamentos(List<string> equipamentos)
+        {
+            if (equipamentos == null) return new List<Equipamento>();
+            
+            var result = new List<Equipamento>();
+            foreach (var eq in equipamentos)
+            {
+                var equipamento = eq.ToLower().Trim() switch
+                {
+                    "scanner itero" or "itero" => Equipamento.ScannerItero,
+                    "scanner medit" or "medit" => Equipamento.ScannerMedit,
+                    "scanner 3shape" or "3shape" => Equipamento.Scanner3Shape,
+                    "scanner cerec" or "cerec" => Equipamento.ScannerCerec,
+                    "raio-x digital" or "raio x digital" => Equipamento.RaioXDigital,
+                    "panorâmica" or "panoramica" => Equipamento.Panoramica,
+                    "tomografia" => Equipamento.Tomografia,
+                    "laser terapêutico" or "laser terapeutico" => Equipamento.LaserTerapeutico,
+                    _ => (Equipamento?)null
+                };
+                
+                if (equipamento.HasValue)
+                    result.Add(equipamento.Value);
+            }
+            
+            return result;
+        }
+
+        private List<Facilidade> ConvertStringListToFacilidades(List<string> facilidades)
+        {
+            if (facilidades == null) return new List<Facilidade>();
+            
+            var result = new List<Facilidade>();
+            foreach (var fac in facilidades)
+            {
+                var facilidade = fac.ToLower().Trim() switch
+                {
+                    "estacionamento" => Facilidade.Estacionamento,
+                    "acessibilidade" => Facilidade.Acessibilidade,
+                    "ar condicionado" => Facilidade.ArCondicionado,
+                    "wifi" or "wi-fi" => Facilidade.Wifi,
+                    _ => (Facilidade?)null
+                };
+                
+                if (facilidade.HasValue)
+                    result.Add(facilidade.Value);
+            }
+            
+            return result;
+        }
+
+        private TimeSpan? ParseTimeSpan(string time)
+        {
+            if (string.IsNullOrEmpty(time)) return null;
+            
+            if (TimeSpan.TryParse(time, out var result))
+                return result;
+                
+            return null;
+        }
+
         public async Task<ICommandResult> AlterarStatusAprovacao(Guid id, StatusAprovacao novoStatus)
         {
             var entity = await _repository.GetDataAsync(x => x.Id == id);

@@ -47,7 +47,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.Email).HasColumnName("email").IsRequired().HasMaxLength(255);
             entity.Property(x => x.ContatoEmergencia).HasColumnName("contato_emergencia").HasMaxLength(20);
 
-            // Endereço
+            // Endereï¿½o
             entity.Property(x => x.Cep).HasColumnName("cep").IsRequired().HasMaxLength(10);
             entity.Property(x => x.EnderecoCompleto).HasColumnName("endereco_completo").IsRequired().HasMaxLength(500);
             entity.Property(x => x.Bairro).HasColumnName("bairro").IsRequired().HasMaxLength(100);
@@ -69,7 +69,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => x.Cpf).IsUnique();
             entity.HasIndex(x => x.Email);
             entity.HasIndex(x => x.NumeroCooperado);
@@ -101,7 +101,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.TempoExperiencia).HasColumnName("tempo_experiencia").HasConversion<string>().IsRequired();
             entity.Property(x => x.OutrasEspecialidades).HasColumnName("outras_especialidades").HasColumnType("TEXT");
 
-            // Dados do Consultório
+            // Dados do Consultï¿½rio
             entity.Property(x => x.NomeConsultorio).HasColumnName("nome_consultorio").IsRequired().HasMaxLength(255);
             entity.Property(x => x.Cnpj).HasColumnName("cnpj").HasMaxLength(18);
             entity.Property(x => x.TelefoneConsultorio).HasColumnName("telefone_consultorio").IsRequired().HasMaxLength(20);
@@ -116,7 +116,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.OutrosEquipamentos).HasColumnName("outros_equipamentos").HasColumnType("TEXT");
             entity.Property(x => x.ObservacoesConsultorio).HasColumnName("observacoes_consultorio").HasColumnType("TEXT");
 
-            // Horários
+            // Horï¿½rios
             entity.Property(x => x.SegundaSextaInicio).HasColumnName("segunda_sexta_inicio");
             entity.Property(x => x.SegundaSextaFim).HasColumnName("segunda_sexta_fim");
             entity.Property(x => x.SabadoInicio).HasColumnName("sabado_inicio");
@@ -125,7 +125,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.DomingoFim).HasColumnName("domingo_fim");
             entity.Property(x => x.TempoMedioConsulta).HasColumnName("tempo_medio_consulta").HasConversion<string>();
 
-            // Dados Bancários
+            // Dados Bancï¿½rios
             entity.Property(x => x.Banco).HasColumnName("banco").IsRequired().HasMaxLength(10);
             entity.Property(x => x.TipoConta).HasColumnName("tipo_conta").HasConversion<string>().IsRequired();
             entity.Property(x => x.Agencia).HasColumnName("agencia").IsRequired().HasMaxLength(10);
@@ -150,7 +150,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => x.Cpf).IsUnique();
             entity.HasIndex(x => x.Cro).IsUnique();
             entity.HasIndex(x => x.EmailProfissional).IsUnique();
@@ -193,7 +193,7 @@ namespace Integration.Infrastructure.Mappings
                 .HasForeignKey(x => x.ProfissionalId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => x.NumeroPedido).IsUnique();
             entity.HasIndex(x => x.Cpf);
             entity.HasIndex(x => x.Status);
@@ -210,6 +210,8 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(x => x.ProfissionalId).HasColumnName("profissional_id").IsRequired();
             entity.Property(x => x.Especialidade).HasColumnName("especialidade").HasConversion<string>().IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)");
 
             entity.HasOne(x => x.Profissional)
                 .WithMany(x => x.Especialidades)
@@ -230,6 +232,8 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(x => x.ProfissionalId).HasColumnName("profissional_id").IsRequired();
             entity.Property(x => x.Equipamento).HasColumnName("equipamento").HasConversion<string>().IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)");
 
             entity.HasOne(x => x.Profissional)
                 .WithMany(x => x.Equipamentos)
@@ -250,6 +254,8 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             entity.Property(x => x.ProfissionalId).HasColumnName("profissional_id").IsRequired();
             entity.Property(x => x.Facilidade).HasColumnName("facilidade").HasConversion<string>().IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)");
 
             entity.HasOne(x => x.Profissional)
                 .WithMany(x => x.Facilidades)
@@ -260,7 +266,7 @@ namespace Integration.Infrastructure.Mappings
         }
     }
 
-    // Adicionar outros mappings conforme necessário...
+    // Adicionar outros mappings conforme necessï¿½rio...
     public class PlanejamentoDigitalMap : IEntityTypeConfiguration<PlanejamentoDigital>
     {
         public void Configure(EntityTypeBuilder<PlanejamentoDigital> entity)
@@ -300,7 +306,7 @@ namespace Integration.Infrastructure.Mappings
                 .HasForeignKey(x => x.ProfissionalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => x.Status);
             entity.HasIndex(x => x.TipoAparelho);
         }
@@ -340,7 +346,7 @@ namespace Integration.Infrastructure.Mappings
                 .HasForeignKey(x => x.ProfissionalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => x.DataAgendamento);
             entity.HasIndex(x => new { x.ProfissionalId, x.DataAgendamento });
             entity.HasIndex(x => x.Status);
@@ -366,7 +372,7 @@ namespace Integration.Infrastructure.Mappings
             entity.Property(x => x.Status).HasColumnName("status").HasConversion<string>().HasDefaultValue(StatusDocumento.Pendente);
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP(6)");
 
-            // Índices
+            // ï¿½ndices
             entity.HasIndex(x => new { x.EntidadeTipo, x.EntidadeId });
             entity.HasIndex(x => x.TipoDocumento);
         }

@@ -183,9 +183,9 @@ namespace Integration.Api.Controllers
         [AllowAnonymous]
         [ProducesResponseType(typeof(BaseResponse<ProfissionalResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseError), StatusCodes.Status412PreconditionFailed)]
-        public async Task<IActionResult> Create([FromBody] ProfissionalRegisterRequest request)
+        public async Task<IActionResult> Create([FromBody] ProfissionalRegisterRequestDto request)
         {
-            var data = await _service.Handle(request);
+            var data = await _service.HandleDto(request);
             return ResponseHandler<ProfissionalResponse>(data as ProfissionalResponse, 
                 "Não foi possível cadastrar o profissional");
         }
