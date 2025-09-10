@@ -9,11 +9,8 @@ namespace Integration.Infrastructure.Repositories
 {
     public class PacienteRepository : GenericRepository<Paciente>, IPacienteRepository
     {
-        private readonly OdontoSmileDataContext _context;
-
         public PacienteRepository(OdontoSmileDataContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<Paciente> GetByCpfAsync(string cpf)
@@ -61,6 +58,19 @@ namespace Integration.Infrastructure.Repositories
             return await _context.Set<Paciente>()
                 .Where(x => x.Cpf.Contains(termo) || x.NomeCompleto.ToLower().Contains(termo.ToLower()))
                 .OrderBy(x => x.NomeCompleto)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Set<Paciente>().CountAsync();
+        }
+
+        public async Task<IEnumerable<Paciente>> GetPacientesRecentesAsync()
+        {
+            return await _context.Set<Paciente>()
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(10)
                 .ToListAsync();
         }
     }

@@ -14,11 +14,8 @@ namespace Integration.Infrastructure.Repositories
 {
     public class AgendamentoRepository : GenericRepository<Agendamento>, IAgendamentoRepository
     {
-        private readonly OdontoSmileDataContext _context;
-
         public AgendamentoRepository(OdontoSmileDataContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<IEnumerable<Agendamento>> GetPorDataAsync(DateTime data)
@@ -108,6 +105,66 @@ namespace Integration.Infrastructure.Repositories
                     && ((x.HorarioInicio < horarioFim)
                         && (x.HorarioInicio.Add(TimeSpan.FromMinutes(x.DuracaoMinutos)) > horario)))
                 .ToListAsync();
+        }
+
+        public async Task<int> GetConsultasHojeCountAsync()
+        {
+            var hoje = DateTime.Today;
+            return await _context.Set<Agendamento>()
+                .CountAsync(x => x.DataAgendamento.Date == hoje);
+        }
+
+        public async Task<IEnumerable<Agendamento>> GetConsultasHojeAsync()
+        {
+            var hoje = DateTime.Today;
+            return await _context.Set<Agendamento>()
+                .Include(x => x.Paciente)
+                .Include(x => x.Profissional)
+                .Where(x => x.DataAgendamento.Date == hoje)
+                .OrderBy(x => x.HorarioInicio)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Agendamento>> GetConsultasPendentesAsync()
+        {
+            return await _context.Set<Agendamento>()
+                .Include(x => x.Paciente)
+                .Include(x => x.Profissional)
+                .Where(x => x.Status == StatusAgendamento.Agendado && x.DataAgendamento >= DateTime.Today)
+                .OrderBy(x => x.DataAgendamento)
+                .ThenBy(x => x.HorarioInicio)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Agendamento>> GetCancelamentosSemanaAsync(DateTime inicioSemana, DateTime fimSemana)
+        {
+            return await _context.Set<Agendamento>()
+                .Include(x => x.Paciente)
+                .Include(x => x.Profissional)
+                .Where(x => x.Status == StatusAgendamento.Cancelado 
+                           && x.DataAgendamento.Date >= inicioSemana.Date 
+                           && x.DataAgendamento.Date <= fimSemana.Date)
+                .ToListAsync();
+        }
+
+        public async Task<Agendamento> GetUltimaConsultaPacienteAsync(Guid pacienteId)
+        {
+            return await _context.Set<Agendamento>()
+                .Where(x => x.PacienteId == pacienteId && x.DataAgendamento < DateTime.Today)
+                .OrderByDescending(x => x.DataAgendamento)
+                .ThenByDescending(x => x.HorarioInicio)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Agendamento> GetProximaConsultaPacienteAsync(Guid pacienteId)
+        {
+            return await _context.Set<Agendamento>()
+                .Where(x => x.PacienteId == pacienteId 
+                           && x.DataAgendamento >= DateTime.Today 
+                           && x.Status != StatusAgendamento.Cancelado)
+                .OrderBy(x => x.DataAgendamento)
+                .ThenBy(x => x.HorarioInicio)
+                .FirstOrDefaultAsync();
         }
     }
 }

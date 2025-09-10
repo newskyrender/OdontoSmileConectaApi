@@ -15,5 +15,11 @@ namespace Integration.Domain.Repositories
         Task<IEnumerable<Agendamento>> GetPorProfissionalEDataAsync(Guid profissionalId, DateTime data);
         Task<bool> VerificarDisponibilidadeAsync(Guid profissionalId, DateTime data, TimeSpan horario, int duracao);
         Task<IEnumerable<Agendamento>> GetConflitosAsync(Guid profissionalId, DateTime data, TimeSpan horario, int duracao);
+        Task<int> GetConsultasHojeCountAsync();
+        Task<IEnumerable<Agendamento>> GetConsultasHojeAsync();
+        Task<IEnumerable<Agendamento>> GetConsultasPendentesAsync();
+        Task<IEnumerable<Agendamento>> GetCancelamentosSemanaAsync(DateTime inicioSemana, DateTime fimSemana);
+        Task<Agendamento> GetUltimaConsultaPacienteAsync(Guid pacienteId);
+        Task<Agendamento> GetProximaConsultaPacienteAsync(Guid pacienteId);
     }
 }

@@ -41,6 +41,7 @@ namespace Integration.Api.Configurations
             services.AddScoped<DocumentoService>();
             services.AddScoped<ProfissionalService>();
             services.AddScoped<SolicitacaoOrcamentoService>();
+            services.AddScoped<DashboardService>();
 
             return services;
         }
