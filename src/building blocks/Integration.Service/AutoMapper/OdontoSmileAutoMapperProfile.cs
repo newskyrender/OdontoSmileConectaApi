@@ -49,7 +49,7 @@ namespace Integration.Service.AutoMapper
 
             CreateMap<AgendamentoRegisterRequest, Agendamento>()
                 .ConstructUsing(src => new Agendamento(default, src.ProfissionalId, src.PacienteNome,
-                    src.DataAgendamento, src.HorarioInicio, src.Servico));
+                    src.DataAgendamento, src.GetHorarioInicio(), src.Servico));
 
             CreateMap<Documento, DocumentoResponse>();
             CreateMap<DocumentoUploadRequest, Documento>()

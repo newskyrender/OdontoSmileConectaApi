@@ -98,13 +98,21 @@ namespace Integration.Infrastructure.Repositories
         {
             var horarioFim = horario.Add(TimeSpan.FromMinutes(duracao));
 
-            return await _context.Set<Agendamento>()
+            // Buscar todos os agendamentos do profissional no dia (exceto cancelados)
+            var agendamentos = await _context.Set<Agendamento>()
                 .Where(x => x.ProfissionalId == profissionalId
                     && x.DataAgendamento.Date == data.Date
-                    && x.Status != StatusAgendamento.Cancelado
-                    && ((x.HorarioInicio < horarioFim)
-                        && (x.HorarioInicio.Add(TimeSpan.FromMinutes(x.DuracaoMinutos)) > horario)))
+                    && x.Status != StatusAgendamento.Cancelado)
                 .ToListAsync();
+
+            // Verificar conflitos em memória para evitar problemas de tradução SQL
+            var conflitos = agendamentos.Where(x =>
+            {
+                var agendamentoFim = x.HorarioInicio.Add(TimeSpan.FromMinutes(x.DuracaoMinutos));
+                return (x.HorarioInicio < horarioFim) && (agendamentoFim > horario);
+            });
+
+            return conflitos;
         }
 
         public async Task<int> GetConsultasHojeCountAsync()

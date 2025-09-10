@@ -91,8 +91,9 @@ namespace Integration.Service.Services
                 AddNotification("Warning", "Profissional não encontrado");
 
             // Verificar disponibilidade
+            var horarioInicio = request.GetHorarioInicio();
             var disponivel = await _repository.VerificarDisponibilidadeAsync(request.ProfissionalId,
-                request.DataAgendamento, request.HorarioInicio, request.DuracaoMinutos);
+                request.DataAgendamento, horarioInicio, request.DuracaoMinutos);
 
             if (!disponivel)
                 AddNotification("Warning", "Horário não disponível");
@@ -100,7 +101,7 @@ namespace Integration.Service.Services
             if (!IsValid()) return default;
 
             var entity = new Agendamento(default, request.ProfissionalId, request.PacienteNome,
-                request.DataAgendamento, request.HorarioInicio, request.Servico);
+                request.DataAgendamento, horarioInicio, request.Servico);
 
             AddNotifications(entity.Notifications);
 
@@ -119,15 +120,16 @@ namespace Integration.Service.Services
             if (entity is null) AddNotification("Warning", "Agendamento não encontrado");
 
             // Verificar nova disponibilidade
+            var novoHorario = request.GetNovoHorarioInicio();
             var disponivel = await _repository.VerificarDisponibilidadeAsync(entity.ProfissionalId,
-                request.NovaDataAgendamento, request.NovoHorarioInicio, entity.DuracaoMinutos);
+                request.NovaDataAgendamento, novoHorario, entity.DuracaoMinutos);
 
             if (!disponivel)
                 AddNotification("Warning", "Novo horário não disponível");
 
             if (!IsValid()) return default;
 
-            entity.Reagendar(request.NovaDataAgendamento, request.NovoHorarioInicio);
+            entity.Reagendar(request.NovaDataAgendamento, novoHorario);
 
             await _repository.UpdateAsync(entity);
             await _uow.CommitAsync();
