@@ -13,10 +13,10 @@ namespace Integration.Domain.Entities
     {
         protected Agendamento() { }
 
-        public Agendamento(Guid id, Guid profissionalId, string pacienteNome, DateTime dataAgendamento,
+        public Agendamento(Guid? pacienteId, Guid profissionalId, string pacienteNome, DateTime dataAgendamento,
             TimeSpan horarioInicio, ServicoAgendamento servico)
         {
-            if (id != Guid.Empty) Id = id;
+            PacienteId = pacienteId;
             ProfissionalId = profissionalId;
             PacienteNome = pacienteNome;
             DataAgendamento = dataAgendamento;
@@ -60,6 +60,21 @@ namespace Integration.Domain.Entities
         {
             DataAgendamento = novaData;
             HorarioInicio = novoHorario;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void DefinirDadosAdicionais(string telefone, string email, string observacoes, int duracaoMinutos)
+        {
+            Telefone = telefone;
+            Email = email;
+            Observacoes = observacoes;
+            DuracaoMinutos = duracaoMinutos > 0 ? duracaoMinutos : DuracaoMinutos;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void DefinirPacienteId(Guid? pacienteId)
+        {
+            PacienteId = pacienteId;
             UpdatedAt = DateTime.UtcNow;
         }
     }

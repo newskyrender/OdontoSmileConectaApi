@@ -100,8 +100,11 @@ namespace Integration.Service.Services
 
             if (!IsValid()) return default;
 
-            var entity = new Agendamento(default, request.ProfissionalId, request.PacienteNome,
+            var entity = new Agendamento(request.PacienteId, request.ProfissionalId, request.PacienteNome,
                 request.DataAgendamento, horarioInicio, request.Servico);
+
+            // Definir dados adicionais
+            entity.DefinirDadosAdicionais(request.Telefone, request.Email, request.Observacoes, request.DuracaoMinutos);
 
             AddNotifications(entity.Notifications);
 
